@@ -1,0 +1,23 @@
+html {
+    /* position: relative;  */
+    overflow-x:hidden;
+    overflow-y:hidden; 
+    /* width: 100%; */
+   height: 100%; 
+   background:#333333;
+   color:silver;
+   stroke: silver;
+
+}
+body {
+   font-family:"Tahoma","San-Serif" , "Microsoft Yahei UI Light";
+   font-size: 100%;
+   margin: 0px 0px 0px 0px;
+}
+.clickable {
+   cursor: pointer;
+}
+
+.offtag {
+   color: goldenrod;
+}
