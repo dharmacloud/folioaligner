@@ -7,18 +7,19 @@ import SplitPane from './3rdparty/splitpane.svelte';
 import {thecm} from './store.js';
 import {beforeChange, cursorActivity,loadCMText} from './editor.ts'
 import ImageViewer from './imageviewer.svelte'
+import VideoViewer from './videoviewer.svelte'
 let editor;
 
-let pos=40;
+let pos=50;
 onMount(()=>{
     const cm=new CodeMirror(editor, {
 	    value:'',lineWrapping:true,
-         readOnly:true,theme:'ambiance',styleActiveLine:true
+        theme:'ambiance',styleActiveLine:true
     })
     thecm.set(cm);
 
     get(thecm).on("cursorActivity",(cm,obj)=>cursorActivity(cm));
-    get(thecm).on("beforeChange",beforeChange);
+    // get(thecm).on("beforeChange",beforeChange);
 
     loadCMText("工作區");
 })
@@ -29,7 +30,7 @@ onMount(()=>{
 
 <SplitPane type="horizontal" bind:pos min={15} max={85}>
     <div slot="a">
-        <div><ImageViewer/></div>
+        <div><VideoViewer/></div>
     </div>
     <div slot="b">
         <Toolbar/>
