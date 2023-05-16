@@ -6,7 +6,6 @@ import EditorToolbar from './editortoolbar.svelte'
 import SplitPane from './3rdparty/splitpane.svelte';
 import {thecm} from './store.js';
 import {beforeChange, cursorActivity,loadCMText} from './editor.ts'
-import ImageViewer from './imageviewer.svelte'
 import VideoViewer from './videoviewer.svelte'
 let editor;
 

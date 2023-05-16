@@ -1,29 +1,39 @@
 <script>
-let canvas;
+import {videoId,videoSeekTo} from './store.js'
 function sleep(time) {  return(new Promise(r=>{ setTimeout(()=>r() , time)}))};
 var player;
+const helpVideoId='2TskfhLQ9Jk';
 window.onYTReady=()=> {
     // 一般使用 影片的id寫在js裡
+    console.log('player')
     player = new YT.Player('player', {
     height: '100%', // 高度預設值為390，css會調成responsive
     // width: '640', // 寬度預設值為640，css會調成responsive
-    videoId: '9U9ddWjH2AQ',
-    disablekb:true,
-    rel:0,
+    videoId: helpVideoId,
+    playerVars: {  controls: 0 ,disablekb:1, rel:0},
     events: {
         'onReady': onPlayerReady
     }
     });
 }
+const loadVideo=(id)=>{
+    if (!id) return;
+    player.loadVideoById(id);
+    setTimeout(()=>{
+        player.pauseVideo();
+    },2000);
+}
+const seekTo=t=>{
+    player&&player.seekTo(t);
+}
+$: loadVideo($videoId)
+$: seekTo($videoSeekTo)
 function onPlayerReady(e) {
         // 為確保瀏覽器上可以自動播放，要把影片調成靜音
         e.target.mute().playVideo();
         setTimeout(async ()=>{
             e.target.pauseVideo();
-
-            await sleep(5000)
-            e.target.seekTo(200)
-        },1500)      
+        },1000);
 }
 </script>
-<div style="height:95vh"><div id="player"></div></div>
+<div style="height:100vh"><div id="player"></div></div>

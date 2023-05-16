@@ -141,6 +141,6 @@ export const beforeChange=(cm:CodeMirror,obj)=>{
 }
 
 export const setCursorLine=(line)=>{
-    get(cm2).setCursor({line:line-1});
+    //get(cm2).setCursor({line:line-1});
     return line;
 }
