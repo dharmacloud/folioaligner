@@ -1,11 +1,10 @@
 <script>
 import {videoId,videoSeekTo} from './store.js'
-function sleep(time) {  return(new Promise(r=>{ setTimeout(()=>r() , time)}))};
+
 var player;
 const helpVideoId='2TskfhLQ9Jk';
 window.onYTReady=()=> {
     // 一般使用 影片的id寫在js裡
-    console.log('player')
     player = new YT.Player('player', {
     height: '100%', // 高度預設值為390，css會調成responsive
     // width: '640', // 寬度預設值為640，css會調成responsive

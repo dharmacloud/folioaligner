@@ -1,46 +1,67 @@
 <script>
-import {videoId,videoSeekTo} from './store.js';
+import {videoId,videoSeekTo,localfile,juan,pb, thecm} from './store.js';
 import Inputnumber from './inputnumber.svelte';
 import {sutras,findSutra} from './sutra.js'
-let sutra,maxjuan=1,maxpage=1,juan=1,page=1;
+import {lineOfJuanPb, loadCMText} from './editor.ts'
+let sutra,maxjuan=1,maxpage=1,texturl='';
+
+
 const onJuanChange=v=>{
     maxjuan=sutra.juanpage.length;
-    page=1;
-    juan=v;
+    $pb=1;
+    $juan=v;
     maxpage=sutra.juanpage[v-1];
-    onPageChange(page);
+    onPageChange($pb);
     return v;
 }
 const onPageChange=v=>{
-    let juanstart=0;
-    for (let i=0;i<juan-1;i++) {
-        juanstart+=sutra.juanpage[i]-1;
-    }
-    const seek= juanstart+v-1;
-    videoSeekTo.set(seek);
+    const line=lineOfJuanPb($juan,v);
+    $thecm.setCursor({line});
     return v;
 }
-const onSutra=e=>{
+const seekVideo=(j,p)=>{
+    let juanstart=0;
+    for (let i=0;i<j-1;i++) {
+        juanstart+=sutra.juanpage[i]-1;
+    }
+    const seek= (juanstart + (p-1))>>1;// 一秒兩pb
+    videoSeekTo.set(seek);
+}
+
+
+$: seekVideo($juan,$pb);
+const onSutra=async e=>{
     const option=e.target.selectedOptions[0];
     sutra=findSutra(option.id)
     if (!sutra)return;
     videoId.set(sutra.youtube);
-    juan=1;
-    page=1;
+    $juan=1;
+    $pb=1;
     maxjuan=sutra.juanpage.length;
-    maxpage=sutra.juanpage[juan-1];
+    maxpage=sutra.juanpage[$juan-1];
+
+    if (document.location.protocol=='https') {
+        texturl='https://raw.githubusercontent.com/accelon/longcang/off/main/ql'+sutra.no+'.off'
+    } else {
+        texturl='off/ql'+sutra.no+'.off';
+    }
+    const resp=await fetch(texturl, {cache: "no-store"});
+    content=await resp.text();
+    loadCMText(content);
 }
 </script>
 
 <span class="Toolbar">
+{#if !$localfile}
 <select on:change={onSutra}>
     <option>選經</option>
     {#each sutras as sutra}
     <option id={sutra.no}>{sutra.title}</option>
     {/each}
 </select>
-卷<Inputnumber max={maxjuan} value={juan} onChange={onJuanChange}/>
-頁<Inputnumber max={maxpage} value={page} onChange={onPageChange}/>
+{/if}
+卷<Inputnumber max={maxjuan} value={$juan} onChange={onJuanChange}/>
+頁<Inputnumber max={maxpage} value={$pb} onChange={onPageChange}/>
 </span>
 
 <style>

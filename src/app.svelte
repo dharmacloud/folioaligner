@@ -5,21 +5,21 @@ import Toolbar from './toolbar.svelte'
 import EditorToolbar from './editortoolbar.svelte'
 import SplitPane from './3rdparty/splitpane.svelte';
 import {thecm} from './store.js';
-import {beforeChange, cursorActivity,loadCMText} from './editor.ts'
+import {keyDown,afterChange,beforeChange, cursorActivity,loadCMText} from './editor.ts'
 import VideoViewer from './videoviewer.svelte'
 let editor;
 
 let pos=50;
 onMount(()=>{
     const cm=new CodeMirror(editor, {
-	    value:'',lineWrapping:true,
+	    value:'',lineWrapping:false,
         theme:'ambiance',styleActiveLine:true
     })
     thecm.set(cm);
-
-    get(thecm).on("cursorActivity",(cm,obj)=>cursorActivity(cm));
-    // get(thecm).on("beforeChange",beforeChange);
-
+    get(thecm).on("cursorActivity",cursorActivity);
+    get(thecm).on("beforeChange",beforeChange);
+    get(thecm).on("change",afterChange)
+    get(thecm).on("keydown",keyDown)
     loadCMText("工作區");
 })
 

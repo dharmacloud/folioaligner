@@ -1,7 +1,7 @@
 <script>
 import {verifyPermission} from "ptk"
 import InputNumber from "./inputnumber.svelte";
-import {cursorline,dirty,thecm} from "./store.js";
+import {cursorline,dirty,thecm,localfile} from "./store.js";
 import {loadCMText ,setCursorLine } from "./editor.js";
 
 const pickerOpts = {
@@ -23,6 +23,7 @@ async function openOff(){
     filehandle=filehandles[0];
     workingfile=await filehandle.getFile();
     const text=await workingfile.text();
+    localfile.set(true);
     loadText(text,filehandle.name);
 }
 
@@ -47,10 +48,6 @@ function handleKeydown(evt) {
     } else if (key=='s' && alt) {
         save();
     }
-}
-const tryit=async ()=>{
-    const response=await fetch("dn3.yh.off");
-    loadText(await response.text(),"dn3.yh.off");
 }
 
 </script>
