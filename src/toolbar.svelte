@@ -1,15 +1,15 @@
 <script>
-import {videoSeekTo,localfile,cursorline,dirty,juan,pb, thecm} from './store.js';
+import {videoSeekTo,localfile,cursorline,dirty,juan,pb, thecm,maxpage,maxjuan,maxline,filename} from './store.js';
 import InputNumber from './inputnumber.svelte';
 import {sutras} from './sutra.js'
 import {lineOfJuanPb,setCursorLine} from './editor.ts'
-import {sutra,maxjuan,setmaxjuan,maxpage,setmaxpage,openOff,save,filehandle,maxLine} from './workingfile.js'
+import {sutra,openOff,save} from './workingfile.js'
 
 const onJuanChange=v=>{
-    setmaxjuan(sutra.juanpage.length);
+    maxjuan.set(sutra.juanpage.length);
     $pb=1;
     $juan=v;
-    setmaxpage(sutra.juanpage[v-1]);
+    maxpage.set(sutra.juanpage[v-1]);
     onPageChange($pb);
     return v;
 }
@@ -60,16 +60,16 @@ function handleKeydown(evt) {
     {/each}
 </select>
 {/if}
-卷<InputNumber max={maxjuan} value={$juan} onChange={onJuanChange}/>
-頁<InputNumber max={maxpage} value={$pb} onChange={onPageChange}/>
+卷<InputNumber max={$maxjuan} value={$juan} onChange={onJuanChange}/>
+頁<InputNumber max={$maxpage} value={$pb} onChange={onPageChange}/>
 </span>
 
 <svelte:window on:keydown={handleKeydown}/>
-<button disabled={$dirty&&filehandle} title="alt-p" class="clickable" on:click={openOff}>📂</button>
-<button disabled={!$dirty||!filehandle} title="alt-s" on:click={save}>💾</button>
-<InputNumber bind:value={$cursorline} onChange={setCursorLine} min={1} max={maxLine}/>
-{filehandle?.name||''}
 
+<button disabled={$dirty&&filename} title="alt-p" class="clickable" on:click={openOff}>📂</button>
+<button disabled={!$dirty||!filename} title="alt-s" on:click={save}>💾</button>
+<InputNumber bind:value={$cursorline} onChange={setCursorLine} min={1} max={$maxline}/>
+{$filename}
 
 <style>
 .Toolbar {height: 1.5em}

@@ -1,10 +1,10 @@
 import {verifyPermission} from "ptk"
-import {thecm,localfile,videoId,juan,pb} from "./store.js";
+import {thecm,localfile,videoId,juan,pb,maxpage,maxjuan,maxline,filename} from "./store.js";
 import {setCursorLine, loadCMText} from './editor.ts'
 import {get} from 'svelte/store'
 import {findSutra} from './sutra.js'
 
-export let sutra,maxjuan=1,maxpage=1,texturl='',filehandle, maxLine=0;
+export let sutra,texturl='',filehandle;
 
 const pickerOpts = {
     types: [{description: "Offtext",accept: {"off/*": [".off"] }}],
@@ -14,15 +14,16 @@ const pickerOpts = {
 
 export let workingfile;
 
-const loadText=(text,filename)=>{
-    maxLine=loadCMText(text);
-    setCursorLine( parseInt(localStorage.getItem('aligner_'+filename))||1);
+const loadText=(text,fn)=>{
+    maxline.set(loadCMText(text));
+    setCursorLine( parseInt(localStorage.getItem('aligner_'+fn))||1);
 }
 export const  openOff=async ()=>{
     const filehandles = await window.showOpenFilePicker(pickerOpts);
     filehandle=filehandles[0];
-    const filename=filehandle.name;
-    const m=filename.match(/ql([\da-z]+)/);
+    const fn=filehandle.name
+    filename.set(fn);
+    const m=fn.match(/ql([\da-z]+)/);
     if (!m) return;
 
     loadSutra(m[1]);
@@ -30,7 +31,7 @@ export const  openOff=async ()=>{
 
     const text=await workingfile.text();
     localfile.set(true);
-    loadText(text,filename);
+    loadText(text,fn);
 }
 
  export const save=async()=>{
@@ -43,12 +44,6 @@ export const  openOff=async ()=>{
         localStorage.setItem('aligner_'+filehandle.name, $cursorline );
     }
 }
-export const setmaxpage=v=>{
-    maxpage=v;
-}
-export const setmaxjuan=v=>{
-    maxjuan=v;
-}
 export const loadSutra=async (id)=>{
     sutra=findSutra(id)
     if (!sutra)return;
@@ -59,8 +54,8 @@ export const loadSutra=async (id)=>{
     }
     juan.set(1);
     pb.set(1);
-    maxjuan=sutra.juanpage.length;
-    maxpage=sutra.juanpage[get(juan)-1];
+    maxjuan.set(sutra.juanpage.length);
+    maxpage.set(sutra.juanpage[get(juan)-1]);
 
     if (document.location.protocol=='https') {
         texturl='https://raw.githubusercontent.com/accelon/longcang/off/main/ql'+sutra.no+'.off'

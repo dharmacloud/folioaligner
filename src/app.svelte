@@ -3,9 +3,10 @@ import {onMount} from 'svelte'
 import {get} from 'svelte/store'
 import Toolbar from './toolbar.svelte'
 import SplitPane from './3rdparty/splitpane.svelte';
-import {thecm} from './store.js';
+import {thecm,replacing} from './store.js';
 import {keyDown,afterChange,beforeChange, cursorActivity,loadCMText} from './editor.ts'
 import VideoViewer from './videoviewer.svelte'
+import Replacing from './replacing.svelte'
 let editor;
 
 let pos=50;
@@ -31,7 +32,11 @@ onMount(()=>{
         <div><VideoViewer/></div>
     </div>
     <div slot="b">
+        {#if $replacing}
+        <Replacing/>
+        {:else}
         <Toolbar/>
+        {/if}
         <div bind:this={editor}></div>
     </div>
 </SplitPane>
