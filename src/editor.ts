@@ -40,10 +40,22 @@ export const loadCMText=(text)=>{
     cm.operation(()=>{
         for (let i=0;i<lines.length;i++) markOfftext( cm, i);
     });
-    cm.setCursor({line});
+    if (line<=cm.lineCount()) cm.setCursor({line});
     return lines.length;
 }
-
+const isdeletespace=(cm,from,to)=>{
+    if (from.line==to.line && Math.abs(from.ch-to.ch)==1 ) {
+        const line=cm.getLine(from.line)
+        const ch=Math.min(from.ch,to.ch);
+        return line.charAt(ch)=='　';
+    }
+}
+const isinsertspace=(cm,text)=>{
+    if (text.length==1 && (text[0]==' '||text[0]=='　')) {
+        if (text[0]==' ') text[0]='　';
+        return true;
+    }
+}
 export const beforeChange=(cm:CodeMirror,obj)=>{
     const {origin,text,to,from,cancel}=obj;
     if (origin=='setValue') return;
@@ -59,9 +71,11 @@ export const beforeChange=(cm:CodeMirror,obj)=>{
 
     if (origin=='+delete') {
         if (to.line==from.line+1 && to.ch==0) {
+        } else if (isdeletespace(cm,from,to)){ //allow delete space
         } else cancel();
     } else if (origin=='+input') {
         if (text.length==2 && text.join('')=='') {
+        } else if (isinsertspace(cm,text)){
         } else {
             cancel();
         }
@@ -72,9 +86,9 @@ export const afterChange=(cm:CodeMirror,obj)=>{
     // 
     if (origin=='+delete') { //join
         if (to.line==from.line+1 && to.ch==0) {
-            dirty.set(true);
             rebuildJuanPb(cm);
         }
+        dirty.set(true);
     } else if (origin=='+input') {
         if (text.length==2 && text.join('')=='') {
             dirty.set(true);
@@ -108,6 +122,8 @@ export const cursorActivity=(cm:CodeMirror)=>{
 }
 
 export const setCursorLine=(line)=>{
+    const cm=get(thecm);
+    if (line<cm.lineCount()) cm.setCursor(line);
     return line;
 }
 

@@ -2,7 +2,6 @@
 import {onMount} from 'svelte'
 import {get} from 'svelte/store'
 import Toolbar from './toolbar.svelte'
-import EditorToolbar from './editortoolbar.svelte'
 import SplitPane from './3rdparty/splitpane.svelte';
 import {thecm} from './store.js';
 import {keyDown,afterChange,beforeChange, cursorActivity,loadCMText} from './editor.ts'
@@ -33,7 +32,6 @@ onMount(()=>{
     </div>
     <div slot="b">
         <Toolbar/>
-        <EditorToolbar/>
         <div bind:this={editor}></div>
     </div>
 </SplitPane>

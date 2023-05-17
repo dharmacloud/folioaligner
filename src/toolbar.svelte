@@ -1,22 +1,22 @@
 <script>
-import {videoId,videoSeekTo,localfile,juan,pb, thecm} from './store.js';
-import Inputnumber from './inputnumber.svelte';
-import {sutras,findSutra} from './sutra.js'
-import {lineOfJuanPb, loadCMText} from './editor.ts'
-let sutra,maxjuan=1,maxpage=1,texturl='';
-
+import {videoSeekTo,localfile,cursorline,dirty,juan,pb, thecm} from './store.js';
+import InputNumber from './inputnumber.svelte';
+import {sutras} from './sutra.js'
+import {lineOfJuanPb,setCursorLine} from './editor.ts'
+import {sutra,maxjuan,setmaxjuan,maxpage,setmaxpage,openOff,save,filehandle,maxLine} from './workingfile.js'
 
 const onJuanChange=v=>{
-    maxjuan=sutra.juanpage.length;
+    setmaxjuan(sutra.juanpage.length);
     $pb=1;
     $juan=v;
-    maxpage=sutra.juanpage[v-1];
+    setmaxpage(sutra.juanpage[v-1]);
     onPageChange($pb);
     return v;
 }
 const onPageChange=v=>{
     const line=lineOfJuanPb($juan,v);
-    $thecm.setCursor({line});
+    if (line<=$thecm.lineCount()) $thecm.setCursor({line});
+    pb.set(v)
     return v;
 }
 const seekVideo=(j,p)=>{
@@ -28,27 +28,27 @@ const seekVideo=(j,p)=>{
     videoSeekTo.set(seek);
 }
 
-
 $: seekVideo($juan,$pb);
+
+
 const onSutra=async e=>{
     const option=e.target.selectedOptions[0];
-    sutra=findSutra(option.id)
-    if (!sutra)return;
-    videoId.set(sutra.youtube);
-    $juan=1;
-    $pb=1;
-    maxjuan=sutra.juanpage.length;
-    maxpage=sutra.juanpage[$juan-1];
-
-    if (document.location.protocol=='https') {
-        texturl='https://raw.githubusercontent.com/accelon/longcang/off/main/ql'+sutra.no+'.off'
-    } else {
-        texturl='off/ql'+sutra.no+'.off';
-    }
-    const resp=await fetch(texturl, {cache: "no-store"});
-    content=await resp.text();
-    loadCMText(content);
+    await loadSutra(option.id);
 }
+
+function handleKeydown(evt) {
+    const key=evt.key.toLowerCase();
+    const alt=evt.altKey;
+    if (key=='f5') {//prevent refresh accidently
+       // evt.preventDefault();
+        return;
+    } else if (key=='o' && alt) {
+        openOff();
+    } else if (key=='s' && alt) {
+        save();
+    }
+}
+
 </script>
 
 <span class="Toolbar">
@@ -60,9 +60,16 @@ const onSutra=async e=>{
     {/each}
 </select>
 {/if}
-卷<Inputnumber max={maxjuan} value={$juan} onChange={onJuanChange}/>
-頁<Inputnumber max={maxpage} value={$pb} onChange={onPageChange}/>
+卷<InputNumber max={maxjuan} value={$juan} onChange={onJuanChange}/>
+頁<InputNumber max={maxpage} value={$pb} onChange={onPageChange}/>
 </span>
+
+<svelte:window on:keydown={handleKeydown}/>
+<button disabled={$dirty&&filehandle} title="alt-p" class="clickable" on:click={openOff}>📂</button>
+<button disabled={!$dirty||!filehandle} title="alt-s" on:click={save}>💾</button>
+<InputNumber bind:value={$cursorline} onChange={setCursorLine} min={1} max={maxLine}/>
+{filehandle?.name||''}
+
 
 <style>
 .Toolbar {height: 1.5em}
