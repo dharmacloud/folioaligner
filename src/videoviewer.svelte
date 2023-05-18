@@ -7,19 +7,18 @@ const seekTo=t=>{
 }
 $: seekTo($videoSeekTo);
 </script>
-{#if document.location.protocol=='file:'||document.location.protocol=='http:'} 
-<!-- svelte-ignore a11y-media-has-caption -->
 {#key $videoId}
+{#if document.location.protocol=='file:'||document.location.protocol=='http:'} 
 {#if $videoId}
+<!-- svelte-ignore a11y-media-has-caption -->
 <video bind:this={player}>
     <source src={$videoId} type="video/mp4"/>
 </video>
+{/if}
 {:else}
 <YoutubeViewer/>
 {/if}
 {/key}
-{/if}
-
 <style>
     video {height:100vh}
 </style>
