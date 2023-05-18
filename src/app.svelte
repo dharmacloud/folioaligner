@@ -1,15 +1,17 @@
 <script>
-import {onMount} from 'svelte'
 import Toolbar from './toolbar.svelte'
 import SplitPane from './3rdparty/splitpane.svelte';
-import {thecm,replacing} from './store.js';
+import {thecm,replacing,videoId} from './store.js';
 import {keyDown,afterChange,beforeChange, cursorActivity,loadCMText} from './editor.ts'
 import VideoViewer from './videoviewer.svelte'
 import Replacing from './replacing.svelte'
+import Help from './help.svelte'
+import { get } from 'svelte/store';
 let editor;
 
 let pos=50;
-onMount(()=>{
+const createEditor=(id)=>{
+    if (!id || get(thecm)) return;
     const cm=new CodeMirror(editor, {
 	    value:'',lineWrapping:false,
         theme:'ambiance',styleActiveLine:true
@@ -20,8 +22,8 @@ onMount(()=>{
     cm.on("change",afterChange)
     cm.on("keydown",keyDown)
     loadCMText("工作區");
-})
-
+}
+$: createEditor($videoId)
 </script>
 
 <div class="app">
@@ -36,6 +38,7 @@ onMount(()=>{
         {:else}
         <Toolbar/>
         {/if}
+        {#if !$videoId}<Help/>{/if}
         <div bind:this={editor}></div>
     </div>
 </SplitPane>

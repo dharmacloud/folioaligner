@@ -47,7 +47,7 @@ export const  openOff=async ()=>{
 export const loadSutra=async (id)=>{
     sutra=findSutra(id)
     if (!sutra)return;
-    if (document.location.protocol=='file:'|| document.location.protocol=='http:') {
+    if (document.location.protocol=='file:') { //|| document.location.protocol=='http:'
         videoId.set('mp4/ql'+sutra.no+'.mp4');
     } else {
         videoId.set(sutra.youtube);
@@ -57,12 +57,14 @@ export const loadSutra=async (id)=>{
     maxjuan.set(sutra.juanpage.length);
     maxpage.set(sutra.juanpage[get(juan)-1]);
 
-    if (document.location.protocol=='https') {
+    if (document.location.protocol=='https:') {
         texturl='https://raw.githubusercontent.com/accelon/longcang/off/main/ql'+sutra.no+'.off'
-    } else {
+    } else if (document.location.protocol=='http:'){
         texturl='off/ql'+sutra.no+'.off';
     }
-    const resp=await fetch(texturl, {cache: "no-store"});
-    content=await resp.text();
-    loadCMText(content);
+    if (texturl) {
+        const resp=await fetch(texturl, {cache: "no-store"});
+        content=await resp.text();
+        loadCMText(content);    
+    }
 }

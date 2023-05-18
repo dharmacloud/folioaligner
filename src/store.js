@@ -16,3 +16,4 @@ export const maxjuan=writable(1);
 export const maxpage=writable(1);
 export const maxline=writable(1);
 export const replacing=writable(false);
+export const player=writable(null)

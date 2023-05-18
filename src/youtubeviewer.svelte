@@ -1,11 +1,9 @@
 <script>
-import {videoId,videoSeekTo} from './store.js'
+import {videoId,videoSeekTo,player} from './store.js'
 
-var player;
-const helpVideoId='2TskfhLQ9Jk';
-window.onYTReady=()=> {
-    // 一般使用 影片的id寫在js裡
-    player = new YT.Player('player', {
+window.onYTReady=()=>{
+ const helpVideoId='2TskfhLQ9Jk';
+    const pylr=new YT.Player('player', {
     height: '100%', // 高度預設值為390，css會調成responsive
     // width: '640', // 寬度預設值為640，css會調成responsive
     videoId: helpVideoId,
@@ -14,25 +12,29 @@ window.onYTReady=()=> {
         'onReady': onPlayerReady
     }
     });
+    player.set(pylr)
+    console.log($player)
+}
+function onPlayerReady(e) {
+    // 為確保瀏覽器上可以自動播放，要把影片調成靜音
+    console.log('player ready')
+    e.target.mute().playVideo();
+    setTimeout(async ()=>{
+        e.target.pauseVideo();
+    },1000);
 }
 const loadVideo=(id)=>{
     if (!id) return;
-    player.loadVideoById(id);
+    $player?.loadVideoById(id);
     setTimeout(()=>{
-        player.pauseVideo();
+        $player?.pauseVideo();
     },2000);
 }
 const seekTo=t=>{
-    player&&player.seekTo(t);
+    $player?.seekTo(t);
 }
-$: loadVideo($videoId)
+$: if ($videoId&& document.location.protocol!=='file:') loadVideo($videoId)
 $: seekTo($videoSeekTo)
-function onPlayerReady(e) {
-        // 為確保瀏覽器上可以自動播放，要把影片調成靜音
-        e.target.mute().playVideo();
-        setTimeout(async ()=>{
-            e.target.pauseVideo();
-        },1000);
-}
+
 </script>
 <div style="height:100vh"><div id="player"></div></div>
