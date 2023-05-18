@@ -3,7 +3,7 @@ import {videoSeekTo,localfile,cursorline,dirty,juan,pb, thecm,maxpage,maxjuan,ma
 import InputNumber from './inputnumber.svelte';
 import {sutras} from './sutra.js'
 import {lineOfJuanPb,setCursorLine} from './editor.ts'
-import {sutra,openOff,save} from './workingfile.js'
+import {sutra,openOff,save,loadSutra} from './workingfile.js'
 
 const onJuanChange=v=>{
     maxjuan.set(sutra.juanpage.length);

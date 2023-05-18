@@ -1,1 +1,1 @@
-copy/y dist\*.* \github.io\accelon.github.io\aligner
+copy/y dist\*.* \github.io\accelon.github.io\folioaligner

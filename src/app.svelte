@@ -1,6 +1,5 @@
 <script>
 import {onMount} from 'svelte'
-import {get} from 'svelte/store'
 import Toolbar from './toolbar.svelte'
 import SplitPane from './3rdparty/splitpane.svelte';
 import {thecm,replacing} from './store.js';
@@ -16,10 +15,10 @@ onMount(()=>{
         theme:'ambiance',styleActiveLine:true
     })
     thecm.set(cm);
-    get(thecm).on("cursorActivity",cursorActivity);
-    get(thecm).on("beforeChange",beforeChange);
-    get(thecm).on("change",afterChange)
-    get(thecm).on("keydown",keyDown)
+    cm.on("cursorActivity",cursorActivity);
+    cm.on("beforeChange",beforeChange);
+    cm.on("change",afterChange)
+    cm.on("keydown",keyDown)
     loadCMText("工作區");
 })
 
@@ -32,7 +31,7 @@ onMount(()=>{
         <div><VideoViewer/></div>
     </div>
     <div slot="b">
-        {#if $replacing}
+        {#if $replacing && !~$replacing.indexOf('\n')}
         <Replacing/>
         {:else}
         <Toolbar/>

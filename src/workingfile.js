@@ -1,5 +1,5 @@
 import {verifyPermission} from "ptk"
-import {thecm,localfile,videoId,juan,pb,maxpage,maxjuan,maxline,filename} from "./store.js";
+import {thecm,localfile,videoId,juan,pb,dirty,maxpage,maxjuan,maxline,filename,cursorline} from "./store.js";
 import {setCursorLine, loadCMText} from './editor.ts'
 import {get} from 'svelte/store'
 import {findSutra} from './sutra.js'
@@ -41,7 +41,7 @@ export const  openOff=async ()=>{
         await writable.write(get(thecm).getValue());
         await writable.close()
         dirty.set(false);
-        localStorage.setItem('aligner_'+filehandle.name, $cursorline );
+        localStorage.setItem('aligner_'+filehandle.name, get(cursorline) );
     }
 }
 export const loadSutra=async (id)=>{
@@ -59,11 +59,10 @@ export const loadSutra=async (id)=>{
 
     if (document.location.protocol=='https') {
         texturl='https://raw.githubusercontent.com/accelon/longcang/off/main/ql'+sutra.no+'.off'
-        const resp=await fetch(texturl, {cache: "no-store"});
-        content=await resp.text();
-        loadCMText(content);        
     } else {
         texturl='off/ql'+sutra.no+'.off';
     }
-
+    const resp=await fetch(texturl, {cache: "no-store"});
+    content=await resp.text();
+    loadCMText(content);
 }

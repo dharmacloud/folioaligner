@@ -1,8 +1,20 @@
-import {bsearchNumber,OFFTAG_REGEX_G} from 'ptk';
-import {dirty,thecm,cursorline,juan,pb,replacing} from './store.js';
+import {bsearchNumber,OFFTAG_REGEX_G,splitUTF32Char,isPunc} from 'ptk';
+import {dirty,thecm,cursorline,juan,pb,replacing,filename} from './store.js';
 import {get} from 'svelte/store';
 const juans=[],pbs=[];
-let rebuildneeded=false;
+
+export const countChar=(linetext)=>{ //see accelon/longcang/gen.js
+    const chars=splitUTF32Char(linetext);
+    let i=0,count=0;
+    while (i<chars.length) {
+        const cp=chars[i]?.charCodeAt(0);
+        if (!isPunc(chars[i]) && (cp>=0x3400||cp==0x3246))  {
+            count++;
+        }
+        i++;
+    }
+    return count;
+}
 export const markOfftext=(cm,line)=>{
     const text=cm.getLine(line);
     text.replace(OFFTAG_REGEX_G,(m,m1,m2,ch)=>{   
@@ -18,7 +30,6 @@ export const markOfftext=(cm,line)=>{
     });
 }
 export const rebuildJuanPb=(cm)=>{
-    if (!rebuildneeded)return;
     console.log('rebuild pb')
     juans.length=0;
     pbs.length=0;
@@ -32,7 +43,6 @@ export const rebuildJuanPb=(cm)=>{
             }
         });
     }
-    rebuildneeded=false;
 }
 export const loadCMText=(text)=>{
     const cm=get(thecm);
@@ -72,7 +82,6 @@ export const beforeChange=(cm:CodeMirror,obj)=>{
             return;    
         }
     }
-
     if (origin=='+delete') {
         if (to.line==from.line+1 && to.ch==0) {
         } else if (isdeletespace(cm,from,to)){ //allow delete space
@@ -85,21 +94,72 @@ export const beforeChange=(cm:CodeMirror,obj)=>{
         }
     }
 }
-export const afterChange=(cm:CodeMirror,obj)=>{
-    const {origin,to,from,text} = obj;
+
+const isGatha=linetext=>{
+    return linetext.length>=5 && !~linetext.indexOf('。') && ~linetext.indexOf('　');
+}
+
+export const reflowLine=(cm,line)=>{
+    const pagetext=[];
+    let till=line;
+    let firstline=cm.getLine(line);
+    if (isGatha(firstline)) {
+        firstline=firstline.replace(/　/g,'●')+'●';
+    }
+    pagetext.push(firstline);
+    for (let i=line+1;i<cm.lineCount();i++) {
+        let linetext=cm.getLine(i);
+        if (~linetext.indexOf('^pb')) {
+            break;
+        } else {
+            if (isGatha(linetext)) {
+                linetext='●'+linetext.replace(/　/g,'●')+'●';
+            }
+            pagetext.push(linetext);
+            till=i;
+        }
+        if (pagetext.length>20) break;
+    }
+    const text=pagetext.join('').replace(/●+/g,'●');
+    const chars=splitUTF32Char(text), out=[];
+    let count=0,linetext='';
+    for (let i=0;i<chars.length;i++) {
+        linetext+=chars[i];
+        const cp=chars[i].codePointAt(0)||0;
+        if (!isPunc(chars[i]) && (cp>=0x3400||cp==0x3246||cp==0x25cf)) { //leading fullwidth blank not counted
+            if (linetext=='●') {
+                //not counting leading ●
+            } else count++;
+        }
+        if (count==17) {
+            out.push(linetext.replace(/^●/g,'').replace(/●$/g,'').replace(/●/g,'　'))
+            count=0;
+            linetext='';
+        }
+    }
+    if (linetext) out.push(linetext.replace(/^●/g,'').replace(/●$/g,'').replace(/●/g,'　'));
+    const newtext=(out.join('\n')   
     
-    if (origin=='+delete') { //join
-        if (to.line==from.line+1 && to.ch==0) {
-            rebuildJuanPb(cm);
+    .replace(/　\n/g,'\n')
+    .replace(/\n。/g,'。\n').replace(/\n．/g,'．\n').replace(/\n+/g,'\n')).trim()+'\n';
+    cm.replaceRange(newtext, {line,ch:0},{line:till+1,ch:0});
+}
+export const afterChange=(cm:CodeMirror,obj)=>{
+    const {removed,from,to,text} = obj;
+    get(filename)&&dirty.set(true);
+    if ( ~text.join('').indexOf('^') || ~removed.join('').indexOf('^') ){
+        const marks=cm.findMarks(from,to);
+        marks.forEach(mark=>mark.clear());
+        for(let i=from.line;i<from.line+text.length;i++) {
+            markOfftext(cm,i);
         }
-        dirty.set(true);
-    } else if (origin=='+input') {
-        if (text.length==2 && text.join('')=='') {
-            dirty.set(true);
-            rebuildJuanPb(cm);
-        }
-    } else {
         rebuildJuanPb(cm);
+    }
+    const linetext= cm.getLine(from.line);
+    if (countChar(linetext)>17) {
+        touchtext(()=>{
+            reflowLine(cm,from.line);
+        })
     }
 }
 
@@ -116,9 +176,7 @@ export const movePb=(cm,e)=>{
             let nexttext=cm.getLine(cursor.line+1);
             nexttext='^pb'+nexttext;
             cm.doc.replaceRange( linetext+'\n'+nexttext,{line:cursor.line,ch:0},{line:cursor.line+1,ch:nexttext.length-3})
-            rebuildneeded=true;
             setTimeout(()=>{
-                markOfftext(cm,cursor.line+1);
                 cm.setCursor({line:cursor.line+1,ch:0});
             },10)
         }
@@ -126,10 +184,8 @@ export const movePb=(cm,e)=>{
         if (cursor.line>0) {
             let prevtext=cm.getLine(cursor.line-1);
             prevtext='^pb'+prevtext;
-            rebuildneeded=true;
             cm.doc.replaceRange( prevtext+'\n'+linetext,{line:cursor.line-1,ch:0},{line:cursor.line,ch:linetext.length-3})
             setTimeout(()=>{
-                markOfftext(cm,cursor.line-1)
                 cm.setCursor({line:cursor.line-1,ch:0})
             },10)
         }        
@@ -168,7 +224,7 @@ export const lineOfJuanPb=(juan,pb)=>{
 export const cursorActivity=(cm:CodeMirror)=>{
     const cursor=cm.getCursor();
     const sel=cm.doc.getSelection();
-    replacing.set(!!sel);
+    replacing.set(sel);
 
     if (cursor.line+1==get(cursorline)) return;
     cursorline.set(cursor.line+1)
@@ -183,17 +239,54 @@ export const setCursorLine=(line)=>{
     if (line<cm.lineCount()) cm.setCursor(line);
     return line;
 }
-
+export const touchtext=(cb)=>{
+    const cm=get(thecm);
+    cm.off("beforeChange",beforeChange);
+    cm.operation(cb);
+    cm.on("beforeChange",beforeChange);    
+}
+const replaceLine=(cm,line,newtext)=>{
+    const oldtext=cm.getLine(line);
+    cm.replaceRange( newtext, {line,ch:0},{line,ch:oldtext.length});
+}
 export const keyDown=(cm,e)=>{
+    const marks=cm.doc.findMarksAt(cm.getCursor());
+    if ((marks.length==0 || marks[0].className!=='pb')&& e.key=='Insert') { //move pb to cursor, add if no
+        const cursor=cm.getCursor();
+        const linetext=cm.getLine(cursor.line);
+        touchtext(()=>{
+            let newtext=linetext.replace('^pb','^^^');
+            newtext=(newtext.slice(0,cursor.ch)+ (cursor.ch?'\n':'')+//split a line or insert at the begining
+            '^pb'+newtext.slice(cursor.ch)).replace('^^^','')
+            replaceLine(cm,cursor.line,newtext);
+            cm.setCursor({line:cursor.line+1,ch:0})
+        })
+        return;
+    } else if (marks.length &&e.key=='Delete') {//remove pb
+        const cursor=cm.getCursor();
+        const linetext=cm.getLine(cursor.line);
+        if (marks[0].className=='pb') {
+            let at=cursor.ch;
+            while (linetext.charAt(at)!=='^' && at>0) at--;
+            if (cursor.ch-at==3) return;//do not delete when cursor at the end of pb
+            const newtext=linetext.slice(0,at)+linetext.slice(at+3);
+            touchtext(()=>{
+                replaceLine(cm,cursor.line,newtext);
+                cm.setCursor({line:cursor.line,ch:at});
+            })
+        }
+        return;
+    }
+
     if (!e.ctrlKey ) return;
-    
     if (e.key=="ArrowDown"||e.key=="ArrowUp"||e.key=="ArrowRight"||e.key=="ArrowLeft") {
         const m=cm.findMarksAt(cm.getCursor());
         if (m&&m.length &&m[0].className=='pb') {
             movePb(cm,e);
             e.preventDefault();
         }
-            
     }
 }
-//control arrow to move pb
+
+//insert a new pb
+//delete a pb  (delete) 
