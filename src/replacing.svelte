@@ -18,7 +18,7 @@ const applychange=()=>{
 $: value=$replacing;
 </script>
 
-<input bind:value /><button on:click={applychange}>Apply</button>
+<input bind:value /><button on:click={applychange}>✔</button>
 <style>
 input{font-size:100%}
 </style>
