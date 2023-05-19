@@ -58,7 +58,7 @@ export const loadSutra=async (id)=>{
     maxpage.set(sutra.juanpage[get(juan)-1]);
 
     if (document.location.protocol=='https:') {
-        texturl='https://raw.githubusercontent.com/accelon/longcang/off/main/ql'+sutra.no+'.off'
+        texturl='https://raw.githubusercontent.com/accelon/longcang/main/off/ql'+sutra.no+'.off'
     } else if (document.location.protocol=='http:'){
         texturl='off/ql'+sutra.no+'.off';
     }
