@@ -1,9 +1,9 @@
 <script>
 import {videoId,videoSeekTo,player} from './store.js'
 
-window.onYTReady=()=>{
- setTimeout(()=>{
-    const helpVideoId='9U9ddWjH2AQ';
+// window.onYTReady=()=>{
+setTimeout(()=>{
+    const helpVideoId='7DMXmf4v3UQ';
     const pylr=new YT.Player('player', {
     height: '100%', // 高度預設值為390，css會調成responsive
     // width: '640', // 寬度預設值為640，css會調成responsive
@@ -15,9 +15,8 @@ window.onYTReady=()=>{
     });
     console.log('create youtube player')
     player.set(pylr)
- },5000)
+},3000);
 
-}
 function onPlayerReady(e) {
     // 為確保瀏覽器上可以自動播放，要把影片調成靜音
     console.log('player ready')
