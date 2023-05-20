@@ -13,8 +13,9 @@ window.onYTReady=()=>{
         'onReady': onPlayerReady
     }
     });
+    console.log('create youtube player')
     player.set(pylr)
- },3000)
+ },5000)
 
 }
 function onPlayerReady(e) {
