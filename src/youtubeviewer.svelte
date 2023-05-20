@@ -2,7 +2,8 @@
 import {videoId,videoSeekTo,player} from './store.js'
 
 window.onYTReady=()=>{
- const helpVideoId='2TskfhLQ9Jk';
+ setTimeout(()=>{
+    const helpVideoId='9U9ddWjH2AQ';
     const pylr=new YT.Player('player', {
     height: '100%', // 高度預設值為390，css會調成responsive
     // width: '640', // 寬度預設值為640，css會調成responsive
@@ -13,7 +14,8 @@ window.onYTReady=()=>{
     }
     });
     player.set(pylr)
-    console.log($player)
+ },3000)
+
 }
 function onPlayerReady(e) {
     // 為確保瀏覽器上可以自動播放，要把影片調成靜音
