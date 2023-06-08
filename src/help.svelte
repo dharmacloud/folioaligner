@@ -1,6 +1,6 @@
 <div>
 <span style="font-size:120%">圖版逐句對齊</span><span>　ver 2023.5.20</span>
-<a href="xx" target="_new">操作示範影片</a><pre>
+<a href="https://www.youtube.com/watch?v=7DMXmf4v3UQ" target="_new">操作示範影片</a><pre>
 選經：選取庫存經典。卷數  頁數   📂開檔 💾存檔  行數
 標記：^pb分頁、^juan卷號、^n經號
 編輯區不能直接刪改文字，只能換行、接行、調整分頁。
