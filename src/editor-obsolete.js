@@ -55,6 +55,7 @@ export const loadCMText=(text)=>{
         for (let i=0;i<lines.length;i++) markOfftext( cm, i);
     });
     if (line<=cm.lineCount()) cm.setCursor({line});
+    console.log(cm.lineCount())
     return lines.length;
 }
 const isdeletespace=(cm,from,to)=>{

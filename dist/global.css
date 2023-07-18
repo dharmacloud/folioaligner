@@ -19,7 +19,7 @@ body {
 }
 
 .offtag {
-   color: purple;
+   color: rgb(190, 119, 13);
 }
 
 .juan {
@@ -28,4 +28,7 @@ body {
 
 .pb {
    color: yellowgreen;
+}
+.folio {
+   color:pink
 }

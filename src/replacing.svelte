@@ -1,5 +1,5 @@
 <script>
-import {markOfftext,touchtext} from './editor.ts';
+import {markOfftext,touchtext} from './editor.js';
 import {replacing,thecm} from './store.js';
 
 const applychange=()=>{

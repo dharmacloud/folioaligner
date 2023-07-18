@@ -1,6 +1,6 @@
 import {verifyPermission} from "ptk"
-import {thecm,localfile,videoId,juan,pb,dirty,maxpage,maxjuan,maxline,filename,cursorline} from "./store.js";
-import {setCursorLine, loadCMText} from './editor.ts'
+import {thecm,localfile,juan,pb,dirty,maxpage,maxjuan,maxline,filename,cursorline} from "./store.js";
+import {setCursorLine, loadCMText} from './editor.js'
 import {get} from 'svelte/store'
 import {findSutra} from './sutra.js'
 
@@ -23,10 +23,8 @@ export const  openOff=async ()=>{
     filehandle=filehandles[0];
     const fn=filehandle.name
     filename.set(fn);
-    const m=fn.match(/ql([\da-z]+)/);
-    if (!m) return;
 
-    loadSutra(m[1]);
+    // loadSutra(fn);
     workingfile=await filehandle.getFile();
 
     const text=await workingfile.text();
@@ -48,9 +46,9 @@ export const loadSutra=async (id)=>{
     sutra=findSutra(id)
     if (!sutra)return;
     if (document.location.protocol=='file:') { //|| document.location.protocol=='http:'
-        videoId.set('mp4/ql'+sutra.no+'.mp4');
+        // videoId.set('mp4/ql'+sutra.no+'.mp4');
     } else {
-        videoId.set(sutra.youtube);
+        // videoId.set(sutra.youtube);
     }
     juan.set(1);
     pb.set(1);

@@ -22,5 +22,5 @@ $: seekTo($videoSeekTo);
 <Youtubeviewer/>
 {/if}
 <style>
-    video {height:100vh}
+    video {height:100vh;}
 </style>

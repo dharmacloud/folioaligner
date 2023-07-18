@@ -1,19 +1,21 @@
 <script>
 import Toolbar from './toolbar.svelte'
 import SplitPane from './3rdparty/splitpane.svelte';
-import {thecm,replacing,videoId} from './store.js';
-import {keyDown,afterChange,beforeChange, cursorActivity,loadCMText} from './editor.ts'
-import VideoViewer from './videoviewer.svelte'
+import {thecm,replacing,activefolioid,panepos} from './store.js';
+import {keyDown,afterChange,beforeChange, cursorActivity,loadCMText} from './editor.js'
+import FolioView from './folioview.svelte'
 import Replacing from './replacing.svelte'
 import Help from './help.svelte'
 import { get } from 'svelte/store';
+import {testdata} from './testdata.js'
+import { onMount } from 'svelte/internal';
 let editor;
 
-let pos=50;
-const createEditor=(id)=>{
-    if (!id || get(thecm)) return;
+
+const createEditor=()=>{
+    if ( get(thecm)) return;
     const cm=new CodeMirror(editor, {
-	    value:'',lineWrapping:false,
+	    value:'',lineWrapping:true,
         theme:'ambiance',styleActiveLine:true
     })
     thecm.set(cm);
@@ -21,16 +23,19 @@ const createEditor=(id)=>{
     cm.on("beforeChange",beforeChange);
     cm.on("change",afterChange)
     cm.on("keydown",keyDown)
-    loadCMText("工作區");
+    loadCMText(testdata);
 }
-$: createEditor($videoId)
+onMount(()=>{
+    createEditor()
+})
+
 </script>
 
 <div class="app">
 
-<SplitPane type="horizontal" bind:pos min={15} max={85}>
+<SplitPane type="horizontal" bind:pos={$panepos} min={15} max={85}>
     <div slot="a">
-        <div><VideoViewer/></div>
+        <div><FolioView/></div>
     </div>
     <div slot="b">
         {#if $replacing && !~$replacing.indexOf('\n')}
@@ -38,7 +43,7 @@ $: createEditor($videoId)
         {:else}
         <Toolbar/>
         {/if}
-        {#if !$videoId}<Help/>{/if}
+        {#if !$activefolioid}<Help/>{/if}
         <div bind:this={editor}></div>
     </div>
 </SplitPane>
