@@ -1,19 +1,39 @@
-import {OFFTAG_REGEX_G,concreateLength,toFolioText} from 'ptk';
+import {OFFTAG_REGEX_G,concreateLength,getConcreatePos,toFolioText,CJKRangeName} from 'ptk';
 import {get} from 'svelte/store';
-import {dirty,thecm,cursormark,cursorline, folioLines,maxline,activepb} from './store.js';
+import {dirty,canedit,thecm,cursormark,cursorline, folioLines,maxline,activepb, activefolioid, editfreely} from './store.js';
 const juans=[],pbs=[],folios=[];
 const regPB=/\^pb(\d+)/;
 const Cursormarker='▼';
 export const FolioChars=17;
 const foliomarks=[];
-const getCursorPage=(cm)=>{    
+
+
+const getRangeText=(cm,start,end,line,ch,addmarker)=>{
+    const lines=[]
+    for (let i=start.line;i<=end.line;i++) {
+        let linetext=cm.getLine(i)||'';
+        if (i==line) {
+            //加上游標所在
+            if (addmarker) linetext=linetext.slice(0,ch)+Cursormarker+linetext.slice(ch);
+        }
+        if (i==end.line) {//先截尾
+            linetext=linetext.slice(0,end.ch+1); // 不加一的話，無法包括結束的 ^pb
+        }
+        if (i==start.line) { //再截頭
+            linetext=linetext.slice(start.ch);
+        }
+        lines.push(linetext);
+    }
+    return lines;
+}
+const getCursorPage=(cm,addmarker=false)=>{    
     const last= cm.lineCount();
     if (last==0) return;
     const {line,ch}=cm.getCursor();
-    const lines=[];
+    let lines=[];
     let from=line-20;
     let till=line+30;
-    let pb=0;
+    let pb=0, pbindex=0;
     if (from<0) from=0;
     if (till>last-1) till=last-1;    
     const uppermarks=cm.findMarks({line:from,ch:0},{line,ch}).filter(it=>it.className=='pb')
@@ -21,30 +41,27 @@ const getCursorPage=(cm)=>{
     while (uppermarks.length>1) uppermarks.shift(); //留最接近的
     while (lowermarks.length>1) lowermarks.pop();   //留最接近的
     if (uppermarks.length) {
-        const linetext=cm.getLine( uppermarks[0].find().from.line);
+        const markpos=uppermarks[0].find();
+        const linetext=cm.getLine( markpos.from.line);
         const m=linetext.match(/\^pb(\d+)/);
         if (m) pb=(parseInt(m[1])-1)||0;
         if (pb<0) pb=0;
-    }
-    if (uppermarks.length && lowermarks.length) {   //一定要有結束的 ^pb
+        pbindex=cm.indexFromPos(markpos.from);
+    
+        
         const start=uppermarks[0].find().from;
-        const end=lowermarks[0].find().to;
-        for (let i=start.line;i<=end.line;i++) {
-            let linetext=cm.getLine(i)
-            if (i==line) {
-                //加上游標所在
-                linetext=linetext.slice(0,ch)+Cursormarker+linetext.slice(ch);
-            }
-            if (i==end.line) {//先截尾
-                linetext=linetext.slice(0,end.ch+1); // 不加一的話，無法包括結束的 ^pb
-            }
-            if (i==start.line) { //再截頭
-                linetext=linetext.slice(start.ch);
-            }
-            lines.push(linetext);
+        const end=lowermarks.length?lowermarks[0].find().to: {line: start.line+10,ch:0 };
+        lines=getRangeText(cm,start,end,line,ch,addmarker);
+    }
+    for (let i=0;i<lines.length;i++) {
+        linetext=lines[i];
+        if (~linetext.indexOf('^gatha')) {
+            lines[i]=linetext.replace(/[，。！？；]/g,'　');
         }
     }
-    return [pb,toFolioText(lines)];
+    let foliolines=toFolioText(lines);
+    foliolines=foliolines.join('\n').replace(/【[^】]+】/,'').split('\n');
+    return [pb,foliolines,pbindex];
 }
 export const getMarkPos=(pagetext)=>{
     if (!pagetext || !pagetext.length) return 0;
@@ -58,37 +75,150 @@ export const getMarkPos=(pagetext)=>{
             break;
         }
     }
-    return line*(FolioChars+1)+ch;
+    return line*(FolioChars+255)+ch;
 }
-export const folioLinesAtLine=(cm,line)=>{
-    let foliolines=5;//default value
+export const folioAtLine=(cm,line)=>{
+    let foliolines=5,folio='';//default value
     for (let i=0;i<foliomarks.length;i++) {
-        const {from,to}=foliomarks[i].find();
+        const mark=foliomarks[i].find();
+        if (!mark) continue;
+        const {from,to}=mark;
         if (from.line>line) break;
         const linetext=cm.getLine(from.line);
         const offtag=linetext.slice(from.ch, to.ch);
         const m=offtag.match(/lines=(\d+)/);
         if (m) foliolines=parseInt(m[1])||5;
+        const m2=offtag.match(/folio#([a-z\d\-_]+)/);
+        if (m2) folio=m2[1];
     }
-    return foliolines;
+    return {lines:foliolines,folio};
 }
-export const beforeChange=(cm,obj)=>{}
-export const afterChange=(cm,obj)=>{}
+let changingtext=false;
+
+export const beforeChange=(cm,obj)=>{
+    const {origin,text,to,from,cancel}=obj;
+    if (origin=='setValue'||!origin) return;
+    if (changingtext) return;
+    if (!canedit) cancel();
+}
+export const afterChange=(cm,obj)=>{
+    const {removed,from,to,text} = obj;
+    const marks=cm.findMarks(from,to);
+    marks.forEach(mark=>mark.clear());
+    for(let i=from.line;i<from.line+text.length;i++) {
+        markOfftext(cm,i);
+    }
+}
+export const countPB=text=>{
+    let count=0;
+    text.replace(/\^lb/g,(m)=>count++);
+    return count;
+}
 export const cursorActivity=(cm)=>{
-    const [pb,pagetext] = getCursorPage(cm);
+    const [pb,pagetext] = getCursorPage(cm,true);
     cursormark.set(getMarkPos(pagetext))
     const line=cm.getCursor().line;
     cursorline.set( line);
     activepb.set(pb);
-    folioLines.set(folioLinesAtLine(cm,line));
+    const {lines,folio}=folioAtLine(cm,line);
+    folioLines.set(lines);
+    activefolioid.set(folio);
 }
 export const touchtext=(cb)=>{
     const cm=get(thecm);
-    cm.off("beforeChange",beforeChange);
+    changingtext=true;
     cm.operation(cb);
-    cm.on("beforeChange",beforeChange);    
+    changingtext=false;
 }
-export const keyDown=(cm,e)=>{}
+const replaceLine=(cm,line,newtext)=>{
+    const oldtext=cm.getLine(line);
+    cm.replaceRange( newtext, {line,ch:0},{line,ch:oldtext.length});
+}
+const nextLb=(cm,line,ch)=>{
+    let nextline=line+1<cm.lineCount()?cm.getLine(line+1):'';
+    let linetext=cm.getLine(line).slice(ch)+ "\n"+nextline;
+    let remain=FolioChars;
+    let now=0;
+    while (remain>0 && now<linetext.length) {
+        const c=linetext.charAt(now);
+        const r=CJKRangeName(c);
+        if (r || c=='　') {
+            remain--;
+        }
+        now++;
+    }
+    return now;
+}
+export const keyDown=(cm,e)=>{
+    cm.toggleOverwrite(false);//make sure in insert mode
+    if (e.key=='F2') {
+        editfreely.set( get(editfreely)=='on'?'off':'on')
+    }
+
+    if (canedit) return;
+    const cursor=cm.getCursor();
+    const linetext=cm.getLine(cursor.line);
+    const marks=cm.doc.findMarksAt(cursor);
+    let m=null;
+    if (marks.length) {
+        m=marks[0].find();
+    }
+
+    const insidetag=!(marks.length==0 || m?.from.ch==cursor.ch || m?.to.ch==cursor.ch);
+    if (e.key=='Enter') {
+        if (!insidetag) {
+            const linetext=cm.getLine(cursor.line);
+            const [pb,lines,pbindex]=getCursorPage(cm);
+
+            const lfs=countPB(getRangeText(cm,cm.posFromIndex(pbindex), cursor).join(''),cursor.line,cursor.ch);
+            let toinsert='^lb';
+            if (lfs+1>=get(folioLines)) {
+                toinsert='^pb'+(pb+2);
+            }
+            touchtext(()=>{
+                newtext=(linetext.slice(0,cursor.ch)+toinsert+linetext.slice(cursor.ch));
+                replaceLine(cm,cursor.line,newtext);
+                const next=nextLb(cm,cursor.line,cursor.ch);
+                const idx=cm.indexFromPos(cursor)+next;
+                cm.setCursor(cm.posFromIndex(idx));
+            })    
+        }
+    }  else if (e.key=='Delete'||e.key=='Backspace') {//remove lb or pb
+        if (marks.length) {
+            const cursor=cm.getCursor();
+            if (marks[0].className=='pb' || marks[0].className=='lb') {
+                const {from,to}=marks[0].find();
+                const newtext=linetext.slice(0,from.ch)+linetext.slice(to.ch);
+                touchtext(()=>{
+                    replaceLine(cm,cursor.line,newtext);
+                    cm.setCursor({line:cursor.line,ch:from.ch});
+                })
+            }    
+        } else {
+            let newtext=linetext;
+            let ch=cursor.ch;
+            if (e.key=="Backspace" &&linetext.slice(cursor.ch-1,cursor.ch)=='　'){
+                newtext=linetext.slice(0,cursor.ch-1)+linetext.slice(cursor.ch);
+                ch--;
+            }
+            else if (e.key=="Delete" && linetext.slice(cursor.ch,cursor.ch+1)=='　'){
+                newtext=linetext.slice(0,cursor.ch)+linetext.slice(cursor.ch+1);
+            }
+            if (newtext!==linetext) {
+                touchtext(()=>{
+                    replaceLine(cm,cursor.line,newtext);
+                    cm.setCursor({line:cursor.line,ch});
+                })
+            }
+        }
+    } else if (!insidetag && e.key==' ') {
+        const newtext=linetext.slice(0,cursor.ch)+'　'+linetext.slice(cursor.ch);
+        touchtext(()=>{
+            replaceLine(cm,cursor.line,newtext);
+            cm.setCursor({line:cursor.line,ch:cursor.ch+1});
+        })        
+    }
+}
 export const loadCMText=(text)=>{
     const cm=get(thecm);
     const line=cm.getCursor().line;
@@ -102,6 +232,8 @@ export const loadCMText=(text)=>{
     });
     if (line<=cm.lineCount()) cm.setCursor({line});
     maxline.set(cm.lineCount())
+    cm.toggleOverwrite(false);//make sure in insert mode
+
     return lines.length;
 }
 export const markOfftext=(cm,line)=>{
@@ -112,6 +244,8 @@ export const markOfftext=(cm,line)=>{
         } else if (m1.startsWith('pb')){
             cm.doc.markText({line,ch},{line,ch:ch+m.length},{className:"pb"})
             const m2=m1.match(/(\d+)/);
+        } else if (m1.startsWith('lb')){
+            cm.doc.markText({line,ch},{line,ch:ch+m.length},{className:"lb"})
         } else if (m1.startsWith('folio')) {
             const foliomark=cm.doc.markText({line,ch},{line,ch:ch+m.length},{className:"folio"})
             foliomarks.push(foliomark);

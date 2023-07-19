@@ -1,16 +1,15 @@
 <div>
-<span style="font-size:120%">圖版逐句對齊</span><span>　ver 2023.5.20</span>
+<span style="font-size:120%">圖版逐句對齊</span><span>　ver 2023.7.19</span>
 <a href="https://www.youtube.com/watch?v=7DMXmf4v3UQ" target="_new">操作示範影片</a><pre>
-選經：選取庫存經典。卷數  頁數   📂開檔 💾存檔  行數
-標記：^pb分頁、^juan卷號、^n經號
-編輯區不能直接刪改文字，只能換行、接行、調整分頁。
-不改異體字，只補漏字和刪去贅字。
+📂開檔 💾存檔  行數
+標記：^pb分頁 ^lb分行  ^juan卷號  ^gatha偈頌
 
-新增文字：選取至少一字進入編輯態（不可跨行），按✔確定。
-刪除文字：取代文字清空，按✔確定。
-刪除分頁：停在^pb中，按Delete。
-新增分頁：按Insert，若該行已有分頁，則移動。分頁將移到行首。
-接行重排：在行尾按Delete或行首按Backspace，自動重排到下一分頁。</pre>
+Enter 分句，Space 加入空格，Backspace/Delete 刪除標記或空格。
+
+自由編輯模式打開才可編輯文字。
+不改異體字，只補影響分行的漏字和刪去贅字。
+
+</pre>
 </div>
 <style>
 a{color:lightblue}

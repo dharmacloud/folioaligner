@@ -1,8 +1,15 @@
 export const AppPrefix='folioaligner.'
 export const loadSettings=()=>{
-    const activefolioid=localStorage.getItem(AppPrefix+'activefolioid')||'agmd1';  
     const panepos=parseInt(localStorage.getItem(AppPrefix+'panepos'))||30;
-    return {activefolioid,panepos}
+    const _savedpos=localStorage.getItem(AppPrefix+'_savedpos')||'{}';
+    let savedpos={};
+    try {
+        savedpos=JSON.parse(_savedpos);
+    } catch(e){
+        console.log(e);
+        savedpos={};
+    }
+    return {panepos,savedpos}
 }
 
 export const saveSettings=()=>{ //immediate save

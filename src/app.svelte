@@ -7,7 +7,7 @@ import FolioView from './folioview.svelte'
 import Replacing from './replacing.svelte'
 import Help from './help.svelte'
 import { get } from 'svelte/store';
-import {testdata} from './testdata.js'
+
 import { onMount } from 'svelte/internal';
 let editor;
 
@@ -23,7 +23,7 @@ const createEditor=()=>{
     cm.on("beforeChange",beforeChange);
     cm.on("change",afterChange)
     cm.on("keydown",keyDown)
-    loadCMText(testdata);
+    loadCMText("");
 }
 onMount(()=>{
     createEditor()

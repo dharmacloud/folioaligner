@@ -30,8 +30,12 @@ body {
 }
 
 .pb {
-   color: yellowgreen;
+   color: gold;
 }
+.lb {
+   color:yellowgreen;
+}
+
 .folio {
    color:pink
 }

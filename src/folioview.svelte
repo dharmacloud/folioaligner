@@ -7,6 +7,7 @@ import {FolioChars} from './editor.js'
 let defaultIndex=0;
 let swiper;
 let images=[];
+let message='';
 const swipeConfig = {
     autoplay: false,
     delay: 0,
@@ -41,11 +42,21 @@ const swipeChanged=(obj)=>{
     defaultIndex=active_item;
 }
 let ready=false;
-const loadZip=async src=>{
+const loadZip=async folio=>{
+    if (!folio)return;
+    const src=$foliopath+folio+".zip";
     ready=false;
-    const res=await fetch(src);
-    const buf=await res.arrayBuffer();
-    const zip=new ZipStore(buf);
+    message='loading '+src;
+    let res=null,buf=null,zip=null;
+    try {
+        res=await fetch(src);
+        buf=await res.arrayBuffer();
+        zip=new ZipStore(buf);
+    } catch (e) {
+        message='cannot load '+src
+        return;
+    }
+
     const imgs=[];
     for (let i=0;i<zip.files.length;i++) {
         const blob=new Blob([zip.files[i].content]);
@@ -53,22 +64,23 @@ const loadZip=async src=>{
     }    
     defaultIndex=zip.files.length-1;
     images=imgs;
+    maxpage.set(zip.files.length)
+
     setTimeout(()=>{
         ready=true;
     },100)
-    maxpage.set(zip.files.length)
+    
 }
 const folioCursorStyle=mark=>{
-    const line=Math.floor(mark / (FolioChars+1));
-    const ch=mark % (FolioChars+1);
+    const line=Math.floor(mark / (FolioChars+255));
+    const ch=mark % (FolioChars+255);
     const frame=imageFrame()
     const unitw=(frame.width/$folioLines)||0;
     const unith=(frame.height/FolioChars)||0;
     const left=Math.floor(($folioLines-line-1)*unitw);
-    const top=Math.floor(unith*ch)-4;
-    const style=`left:${left}px;top:${top}px;width:${unitw}px;height:8px`;
+    const top=Math.floor(unith*ch)-6;
+    const style=`left:${left}px;top:${top}px;width:${unitw}px;height:12px`;
     return style;
-    //$FolioLines
 }
 const gotoPb=(pb)=>{
     if (!$maxpage || !swiper)return;//not loaded yet
@@ -79,7 +91,7 @@ const gotoPb=(pb)=>{
     }
 }
 
-$: loadZip($foliopath+$activefolioid+".zip");
+$: loadZip($activefolioid);
 $: gotoPb($activepb)
     //{previewimages[previewimages.length-idx-1]
 </script>
@@ -93,7 +105,7 @@ $: gotoPb($activepb)
 </Swipe>
 <div class="foliocursor" style={folioCursorStyle($cursormark)}></div>
 {:else}
-Loading Image
+{message}
 {/if}
 </div>
 <style>

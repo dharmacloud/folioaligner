@@ -1,10 +1,10 @@
 <script>
 import {localfile,cursorline,dirty,juan,pb, thecm,maxpage,maxjuan,maxline,filename,editfreely} from './store.js';
 import InputNumber from './inputnumber.svelte';
-import {sutras} from './sutra.js'
-import {setCursorLine} from './editor.js'
-import {sutra,openOff,save,loadSutra} from './workingfile.js'
+import {setCursorLine,loadCMText} from './editor.js'
+import {sutra,openOff,save} from './workingfile.js'
 import Switch from './3rdparty/switch.svelte'
+import {testdata} from './testdata.js'
 const onJuanChange=v=>{
     maxjuan.set(sutra.juanpage.length);
     $pb=1;
@@ -19,16 +19,10 @@ const onPageChange=v=>{
     // pb.set(v)
     return v;
 }
-const seekVideo=(j,p)=>{
+const tryit=()=>{
+    loadCMText(testdata);
 }
 
-$: seekVideo($juan,$pb);
-
-
-const onSutra=async e=>{
-    const option=e.target.selectedOptions[0];
-    await loadSutra(option.id);
-}
 
 function handleKeydown(evt) {
     const key=evt.key.toLowerCase();
@@ -52,9 +46,14 @@ function handleKeydown(evt) {
 <button disabled={!$dirty||!$filename} title="alt-s" on:click={save}>💾</button>
 卷<InputNumber max={$maxjuan} value={$juan} onChange={onJuanChange}/>
 頁<InputNumber max={$maxpage} value={$pb} onChange={onPageChange}/>
+{:else}
+<button on:click={tryit}>試試看</button>
 {/if}
+
 <InputNumber bind:value={$cursorline} onChange={setCursorLine} min={1} max={$maxline}/>
-<Switch bind:value={$editfreely} label="自由編輯" design="slider" fontSize="24"></Switch>
+{#key $editfreely}
+<Switch bind:value={$editfreely} label="自由編輯F2" design="slider" fontSize="24"></Switch>
+{/key}
 </span>
 
 <style>

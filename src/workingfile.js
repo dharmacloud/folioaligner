@@ -1,8 +1,9 @@
 import {verifyPermission} from "ptk"
-import {thecm,localfile,juan,pb,dirty,maxpage,maxjuan,maxline,filename,cursorline} from "./store.js";
+import {thecm,localfile,juan,pb,dirty,maxpage,maxjuan,maxline,filename,cursorline,savedpos} from "./store.js";
 import {setCursorLine, loadCMText} from './editor.js'
 import {get} from 'svelte/store'
 import {findSutra} from './sutra.js'
+import { updateSettings } from "./savestore.js";
 
 export let sutra,texturl='',filehandle;
 
@@ -15,8 +16,9 @@ const pickerOpts = {
 export let workingfile;
 
 const loadText=(text,fn)=>{
+    const line=get(savedpos)[fn] || 0;
     maxline.set(loadCMText(text));
-    setCursorLine( parseInt(localStorage.getItem('aligner_'+fn))||1);
+    setCursorLine( line );
 }
 export const  openOff=async ()=>{
     const filehandles = await window.showOpenFilePicker(pickerOpts);
@@ -41,6 +43,9 @@ export const  openOff=async ()=>{
         dirty.set(false);
         localStorage.setItem('aligner_'+filehandle.name, get(cursorline) );
     }
+    const newsavedpos=Object.assign({} , get(savedpos));
+    newsavedpos[filehandle.name]=get(thecm).getCursor().line;
+    updateSettings({savepos:newsavedpos});
 }
 export const loadSutra=async (id)=>{
     sutra=findSutra(id)
