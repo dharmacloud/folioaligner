@@ -1,8 +1,8 @@
 <div>
 <span style="font-size:120%">圖版逐句對齊</span><span>　ver 2023.7.19</span>
-<a href="https://www.youtube.com/watch?v=7DMXmf4v3UQ" target="_new">操作示範影片</a><pre>
+<a href="https://youtu.be/SDOKhGfdWRc" target="_new">操作示範影片</a><pre>
 📂開檔 💾存檔  行數
-標記：^pb分頁 ^lb分行  ^juan卷號  ^gatha偈頌
+標記：^pb分頁 ^lb分行  ^folio卷  ^gatha偈頌
 
 Enter 分句，Space 加入空格，Backspace/Delete 刪除標記或空格。
 

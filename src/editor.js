@@ -136,7 +136,9 @@ const replaceLine=(cm,line,newtext)=>{
 }
 const nextLb=(cm,line,ch)=>{
     let nextline=line+1<cm.lineCount()?cm.getLine(line+1):'';
-    let linetext=cm.getLine(line).slice(ch)+ "\n"+nextline;
+    let nextline2=line+2<cm.lineCount()?cm.getLine(line+2):'';
+    let nextline3=line+3<cm.lineCount()?cm.getLine(line+3):'';
+    let linetext=cm.getLine(line).slice(ch)+ "\n"+nextline+"\n"+nextline2+"\n"+nextline3;
     let remain=FolioChars;
     let now=0;
     while (remain>0 && now<linetext.length) {
