@@ -6,12 +6,14 @@ export const panepos=writable(settings.panepos)
 export const dirty=writable(false);
 export const thecm=writable(null);
 export const cursorline=writable(0);
-
+export const cursormark=writable(0);//游標位置  行*17 + 字
+export const folioLines=writable(6);
 export const localfile=writable();
 export const juan=writable(1);
 export const pb=writable(1);
 export const filename=writable('');
-
+export const editfreely=writable('off')
+export const activepb=writable(0);
 
 export const maxjuan=writable(1);
 export const maxpage=writable(1);

@@ -1,9 +1,9 @@
 <script>
 import {ZipStore} from 'ptk/zip';
-import {activefolioid,foliopath} from './store.js'
+import {activefolioid,foliopath,cursormark,folioLines,activepb,maxpage} from './store.js'
 import Swipe from './3rdparty/swipe.svelte';
 import SwipeItem from './3rdparty/swipeitem.svelte';
-
+import {FolioChars} from './editor.js'
 let defaultIndex=0;
 let swiper;
 let images=[];
@@ -13,7 +13,21 @@ const swipeConfig = {
     showIndicators: false,
     transitionDuration: 250
 };
-
+const imageFrame=()=>{
+    const img=document.getElementsByClassName('swipe')[defaultIndex];
+	if (!img || !img.clientHeight) return [0,0,0,0];
+    
+	const r=img.clientHeight / img.naturalHeight;
+    const rect=img.getBoundingClientRect();
+    if (rect.left<0) {//還沒捲好
+        rect.left=stableleft;
+    } else {
+        stableleft=rect.left; //穩定的
+    }
+	const w=img.naturalWidth * r;
+	const left=Math.floor((img.clientWidth- w)/2) + rect.x;
+	return {left,top:rect.y,width:w,height:img.clientHeight} ;
+}
 const mousewheel=(e)=>{
     if (e.deltaY>0) {
         swiper.prevItem();
@@ -42,10 +56,31 @@ const loadZip=async src=>{
     setTimeout(()=>{
         ready=true;
     },100)
-    
+    maxpage.set(zip.files.length)
+}
+const folioCursorStyle=mark=>{
+    const line=Math.floor(mark / (FolioChars+1));
+    const ch=mark % (FolioChars+1);
+    const frame=imageFrame()
+    const unitw=(frame.width/$folioLines)||0;
+    const unith=(frame.height/FolioChars)||0;
+    const left=Math.floor(($folioLines-line-1)*unitw);
+    const top=Math.floor(unith*ch)-4;
+    const style=`left:${left}px;top:${top}px;width:${unitw}px;height:8px`;
+    return style;
+    //$FolioLines
+}
+const gotoPb=(pb)=>{
+    if (!$maxpage || !swiper)return;//not loaded yet
+    const go=$maxpage-pb-1;
+    if (go!==defaultIndex) {
+        // console.log('goto',pb, go, defaultIndex)
+        swiper.goTo(go);
+    }
 }
 
 $: loadZip($foliopath+$activefolioid+".zip");
+$: gotoPb($activepb)
     //{previewimages[previewimages.length-idx-1]
 </script>
 <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -56,6 +91,7 @@ $: loadZip($foliopath+$activefolioid+".zip");
     <SwipeItem><img class="swipe" alt="no" src={images[images.length-idx-1]}/></SwipeItem>
     {/each}    
 </Swipe>
+<div class="foliocursor" style={folioCursorStyle($cursormark)}></div>
 {:else}
 Loading Image
 {/if}
