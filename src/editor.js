@@ -161,6 +161,14 @@ const nextLb=(cm,line,ch)=>{
         }
         now++;
     }
+    while (now <linetext.length) {//skip all puncs and tag
+        const c=linetext.charAt(now);
+        const r=CJKRangeName(c);
+        if (r || c=='「' || c=='『' || c=='^') {
+            break;
+        }
+        now++
+    }
     return now;
 }
 export const keyDown=(cm,e)=>{
