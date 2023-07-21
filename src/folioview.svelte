@@ -1,6 +1,6 @@
 <script>
 import {ZipStore} from 'ptk/zip';
-import {activefolioid,foliopath,cursormark,folioLines,activepb,maxpage} from './store.js'
+import {activefolioid,foliopath,cursormark,cursorchar,folioLines,activepb,maxpage} from './store.js'
 import Swipe from './3rdparty/swipe.svelte';
 import SwipeItem from './3rdparty/swipeitem.svelte';
 import {FolioChars} from './editor.js'
@@ -82,6 +82,17 @@ const folioCursorStyle=mark=>{
     const style=`left:${left}px;top:${top}px;width:${unitw}px;height:12px`;
     return style;
 }
+const folioCursorCharStyle=mark=>{
+    const line=Math.floor(mark / (FolioChars+255));
+    const ch=mark % (FolioChars+255);
+    const frame=imageFrame()
+    const unitw=(frame.width/$folioLines)||0;
+    const unith=(frame.height/FolioChars)||0;
+    const left=Math.floor(($folioLines-line-1)*unitw);
+    const top=Math.floor(unith*ch)-unith;
+    const style=`left:${left}px;top:${top}px`;
+    return style;
+}
 const gotoPb=(pb)=>{
     if (!$maxpage || !swiper)return;//not loaded yet
     const go=$maxpage-pb-1;
@@ -104,6 +115,7 @@ $: gotoPb($activepb)
     {/each}    
 </Swipe>
 <div class="foliocursor" style={folioCursorStyle($cursormark)}></div>
+<div class="foliochar" style={folioCursorCharStyle($cursormark)}>{$cursorchar}</div>
 {:else}
 {message}
 {/if}

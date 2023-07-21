@@ -1,6 +1,6 @@
-import {OFFTAG_REGEX_G,concreateLength,getConcreatePos,toFolioText,CJKRangeName} from 'ptk';
+import {OFFTAG_REGEX_G,concreateLength,toFolioText,CJKRangeName} from 'ptk';
 import {get} from 'svelte/store';
-import {dirty,canedit,thecm,cursormark,cursorline, folioLines,maxline,activepb, activefolioid, editfreely} from './store.js';
+import {dirty,canedit,thecm,cursormark,cursorchar,cursorline, folioLines,maxline,activepb, activefolioid, editfreely} from './store.js';
 const juans=[],pbs=[],folios=[];
 const regPB=/\^pb(\d+)/;
 const Cursormarker='▼';
@@ -65,17 +65,21 @@ const getCursorPage=(cm,addmarker=false)=>{
 }
 export const getMarkPos=(pagetext)=>{
     if (!pagetext || !pagetext.length) return 0;
-    let ch=0,line=0;
+    let ch=0,line=0,thechar='';
     for (let i=0;i<pagetext.length;i++) {
         const linetext=pagetext[i];
-        const at=linetext.indexOf(Cursormarker);
+        let at=linetext.indexOf(Cursormarker);
         if (~at) {
             ch=concreateLength(linetext.slice(0,at));
+            while (at>1 && !CJKRangeName(linetext.slice(at-1,at))) { //往前直到 是字
+                at--;
+            }
+            thechar=linetext.slice(at-1,at);
             line=i;
             break;
         }
     }
-    return line*(FolioChars+255)+ch;
+    return [line*(FolioChars+255)+ch, thechar ] ;
 }
 export const folioAtLine=(cm,line)=>{
     let foliolines=5,folio='';//default value
@@ -128,7 +132,9 @@ export const countPB=text=>{
 }
 export const cursorActivity=(cm)=>{
     const [pb,pagetext] = getCursorPage(cm,true);
-    cursormark.set(getMarkPos(pagetext))
+    const [pos,ch]=getMarkPos(pagetext);
+    cursormark.set(pos)  
+    cursorchar.set(ch)
     const line=cm.getCursor().line;
     cursorline.set( line);
     activepb.set(pb);

@@ -1,5 +1,5 @@
 <div>
-<span style="font-size:120%">圖版逐句對齊</span><span>　ver 2023.7.21</span>
+<span style="font-size:120%">圖版逐句對齊</span><span>　ver 2023.7.22</span>
 <a href="https://youtu.be/SDOKhGfdWRc" target="_new">操作示範影片</a><pre>
 📂開檔 💾存檔  行數
 標記：^pb分頁 ^lb分行  ^folio卷  ^gatha偈頌
