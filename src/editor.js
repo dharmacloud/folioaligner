@@ -79,18 +79,29 @@ export const getMarkPos=(pagetext)=>{
 }
 export const folioAtLine=(cm,line)=>{
     let foliolines=5,folio='';//default value
+    //mark might come at the last if the folio line is change, 
+    // so need to check all 
+
+    const foliomarklines=[];
     for (let i=0;i<foliomarks.length;i++) {
         const mark=foliomarks[i].find();
-        if (!mark) continue;
-        const {from,to}=mark;
-        if (from.line>line) break;
-        const linetext=cm.getLine(from.line);
-        const offtag=linetext.slice(from.ch, to.ch);
-        const m=offtag.match(/lines=(\d+)/);
-        if (m) foliolines=parseInt(m[1])||5;
-        const m2=offtag.match(/folio#([a-z\d\-_]+)/);
-        if (m2) folio=m2[1];
+        if (!mark || mark.from.line>line) continue;        
+        foliomarklines.push([mark.from.line,i]);
     }
+    foliomarklines.sort((a,b)=>b[0]-a[0]);//get closest;
+    if (!foliomarklines.length) return {lines:0,folio:''};
+
+    const closestmark=foliomarks[foliomarklines[0][1]].find();
+    const {from,to}=closestmark;
+        
+    const linetext=cm.getLine(from.line);
+    const offtag=linetext.slice(from.ch, to.ch);
+    const m=offtag.match(/lines=(\d+)/);
+    if (m) foliolines=parseInt(m[1])||5;
+    else foliolines=5;
+    const m2=offtag.match(/folio#([a-z\d\-_]+)/);
+    if (m2) folio=m2[1];
+
     return {lines:foliolines,folio};
 }
 let changingtext=false;
@@ -108,6 +119,7 @@ export const afterChange=(cm,obj)=>{
     for(let i=from.line;i<from.line+text.length;i++) {
         markOfftext(cm,i);
     }
+    dirty.set(true)
 }
 export const countPB=text=>{
     let count=0;
@@ -223,7 +235,7 @@ export const keyDown=(cm,e)=>{
 }
 export const loadCMText=(text)=>{
     const cm=get(thecm);
-    const line=cm.getCursor().line;
+    const line= cm.getCursor().line;
     cm.doc.setValue(text);
     const lines=text.split('\n');
     juans.length=0;

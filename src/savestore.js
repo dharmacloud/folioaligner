@@ -1,10 +1,11 @@
 export const AppPrefix='folioaligner.'
 export const loadSettings=()=>{
     const panepos=parseInt(localStorage.getItem(AppPrefix+'panepos'))||30;
-    const _savedpos=localStorage.getItem(AppPrefix+'_savedpos')||'{}';
+    const _savedpos=localStorage.getItem(AppPrefix+'savedpos')||'{}';
     let savedpos={};
     try {
         savedpos=JSON.parse(_savedpos);
+        console.log(savedpos)
     } catch(e){
         console.log(e);
         savedpos={};

@@ -1,5 +1,5 @@
 <script>
-import {localfile,cursorline,dirty,juan,pb, thecm,maxpage,maxjuan,maxline,filename,editfreely} from './store.js';
+import {localfile,cursorline,dirty,juan,pb, folioLines,maxpage,maxjuan,maxline,filename,editfreely} from './store.js';
 import InputNumber from './inputnumber.svelte';
 import {setCursorLine,loadCMText} from './editor.js'
 import {sutra,openOff,save} from './workingfile.js'
@@ -41,7 +41,7 @@ function handleKeydown(evt) {
 
 <svelte:window on:keydown={handleKeydown}/>
 <span class="Toolbar">
-<button disabled={$dirty&&$filename} title="alt-p" class="clickable" on:click={openOff}>📂</button>
+<button disabled={$dirty&&$filename} title="alt-o" class="clickable" on:click={openOff}>📂</button>
 {#if $filename}
 <button disabled={!$dirty||!$filename} title="alt-s" on:click={save}>💾</button>
 卷<InputNumber max={$maxjuan} value={$juan} onChange={onJuanChange}/>
@@ -53,7 +53,7 @@ function handleKeydown(evt) {
 <InputNumber bind:value={$cursorline} onChange={setCursorLine} min={1} max={$maxline}/>
 {#key $editfreely}
 <Switch bind:value={$editfreely} label="自由編輯F2" design="slider" fontSize="24"></Switch>
-{/key}
+{/key} 每頁{$folioLines}行
 </span>
 
 <style>

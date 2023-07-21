@@ -45,7 +45,7 @@ export const  openOff=async ()=>{
     }
     const newsavedpos=Object.assign({} , get(savedpos));
     newsavedpos[filehandle.name]=get(thecm).getCursor().line;
-    updateSettings({savepos:newsavedpos});
+    updateSettings({savedpos:newsavedpos});
 }
 export const loadSutra=async (id)=>{
     sutra=findSutra(id)
