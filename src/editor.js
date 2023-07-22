@@ -1,7 +1,8 @@
 import {OFFTAG_REGEX_G,concreateLength,toFolioText,CJKRangeName} from 'ptk';
 import {get} from 'svelte/store';
-import {dirty,canedit,thecm,cursormark,cursorchar,cursorline, folioLines,maxline,activepb, activefolioid, editfreely} from './store.js';
-const juans=[],pbs=[],folios=[];
+import {dirty,canedit,thecm,cursormark,cursorchar,cursorline, folioLines,maxline,
+    maxjuan,activepb, activefolioid, editfreely} from './store.js';
+const pbs=[];
 const regPB=/\^pb(\d+)/;
 const Cursormarker='▼';
 export const FolioChars=17;
@@ -31,8 +32,8 @@ const getCursorPage=(cm,addmarker=false)=>{
     if (last==0) return;
     const {line,ch}=cm.getCursor();
     let lines=[];
-    let from=line-20;
-    let till=line+30;
+    let from=line-100;
+    let till=line+100;
     let pb=0, pbindex=0;
     if (from<0) from=0;
     if (till>last-1) till=last-1;    
@@ -123,7 +124,7 @@ export const afterChange=(cm,obj)=>{
     for(let i=from.line;i<from.line+text.length;i++) {
         markOfftext(cm,i);
     }
-    dirty.set(true)
+    dirty.set( get(dirty)+1)
 }
 export const countPB=text=>{
     let count=0;
@@ -153,18 +154,43 @@ const replaceLine=(cm,line,newtext)=>{
     cm.replaceRange( newtext, {line,ch:0},{line,ch:oldtext.length});
 }
 const nextLb=(cm,line,ch)=>{
-    let nextline=line+1<cm.lineCount()?cm.getLine(line+1):'';
-    let nextline2=line+2<cm.lineCount()?cm.getLine(line+2):'';
-    let nextline3=line+3<cm.lineCount()?cm.getLine(line+3):'';
-    let linetext=cm.getLine(line).slice(ch)+ "\n"+nextline+"\n"+nextline2+"\n"+nextline3;
+    let nextline=line+1<cm.lineCount()?"\n"+cm.getLine(line+1):'';
+    let nextline2=line+2<cm.lineCount()?"\n"+cm.getLine(line+2):'';
+    let nextline3=line+3<cm.lineCount()?"\n"+cm.getLine(line+3):'';
+
+    let linetext=cm.getLine(line).slice(ch)
+
+    if (!linetext.endsWith('：')) {
+        linetext+=nextline+nextline2+nextline3;
+    } else {
+        linetext+="\n"
+    }
+
+    //text in bracket not counted
+    linetext=linetext.replace(/【([^】]+)】/g,(m,m1)=>'【'+ '】'.repeat(m.length+1));
+
+
     let remain=FolioChars;
-    let now=0;
+    let now=0, ingatha=false;
     while (remain>0 && now<linetext.length) {
-        const c=linetext.charAt(now);
+        let c=linetext.charAt(now);
+        if (c=="\n" && now+1<linetext.length) {
+            now++;
+            c=linetext.charAt(now);
+            if (ingatha &&!~linetext.slice(now).indexOf('^gatha')) { //偈頌結束
+               break;
+            }
+        }
+        
+        if (linetext.slice(now).startsWith('^gatha')) ingatha=true;
+        
         const r=CJKRangeName(c);
         if (r || c=='　') {
             remain--;
+        } else if (ingatha && ~"。；！？，".indexOf(c)) {
+            remain--;
         }
+        
         now++;
     }
     while (now <linetext.length) {//skip all puncs and tag
@@ -247,14 +273,26 @@ export const keyDown=(cm,e)=>{
         })        
     }
 }
+export const getJuanLine=(juan)=>{
+    const cm=get(thecm);
+    const folios=cm.getAllMarks().filter(it=>it.className=='folio');
+    for (let i=0;i<folios.length;i++) {
+        const {from,to}=folios[i].find();
+        const linetext=cm.getLine(from.line);
+        const m=linetext.match(/\^folio#[a-z]+(\d*)/);
+        if (m && parseInt(m[1])==juan) {
+            return from.line;
+        }
+    }
+    return 1;   
+}
 export const loadCMText=(text)=>{
     const cm=get(thecm);
     const line= cm.getCursor().line;
     cm.doc.setValue(text);
     const lines=text.split('\n');
-    juans.length=0;
     pbs.length=0;
-    folios.length=0;
+    maxjuan.set(1);
     cm.operation(()=>{
         for (let i=0;i<lines.length;i++) markOfftext( cm, i);
     });
@@ -262,6 +300,7 @@ export const loadCMText=(text)=>{
     maxline.set(cm.lineCount())
     cm.toggleOverwrite(false);//make sure in insert mode
 
+    
     return lines.length;
 }
 export const markOfftext=(cm,line)=>{
@@ -277,6 +316,10 @@ export const markOfftext=(cm,line)=>{
         } else if (m1.startsWith('folio')) {
             const foliomark=cm.doc.markText({line,ch},{line,ch:ch+m.length},{className:"folio"})
             foliomarks.push(foliomark);
+            const juan=cm.getLine(line).slice(ch,ch+m.length).match(/\^folio#[a-z]+(\d*)/);
+            if (juan && parseInt(juan[1])>get(maxjuan)) {
+                maxjuan.set(parseInt(juan[1]));
+            }
         } else {
             cm.doc.markText({line,ch},{line,ch:ch+m.length},{className:"offtag"})
         }

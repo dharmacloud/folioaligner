@@ -3,15 +3,13 @@ import {writable} from 'svelte/store';
 
 export const activefolioid=writable('')
 export const panepos=writable(settings.panepos)
-export const dirty=writable(false);
+export const dirty=writable(0);
 export const thecm=writable(null);
 export const cursorline=writable(0);
 export const cursormark=writable(0);//游標位置  行*17 + 字
 export const cursorchar=writable('')
 export const folioLines=writable(5);
 export const localfile=writable();
-export const juan=writable(1);
-export const pb=writable(1);
 export const filename=writable('');
 export const editfreely=writable('off')
 export const activepb=writable(0);

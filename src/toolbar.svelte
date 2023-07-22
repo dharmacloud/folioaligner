@@ -1,29 +1,19 @@
 <script>
-import {localfile,cursorline,dirty,juan,pb, folioLines,maxpage,maxjuan,maxline,filename,editfreely} from './store.js';
+import {activefolioid,cursorline,dirty,thecm,folioLines,maxjuan,maxline,filename,editfreely} from './store.js';
 import InputNumber from './inputnumber.svelte';
-import {setCursorLine,loadCMText} from './editor.js'
-import {sutra,openOff,save} from './workingfile.js'
+import {setCursorLine,loadCMText,getJuanLine} from './editor.js'
+import {openOff,save} from './workingfile.js'
 import Switch from './3rdparty/switch.svelte'
 import {testdata} from './testdata.js'
+let juan;
 const onJuanChange=v=>{
-    maxjuan.set(sutra.juanpage.length);
-    $pb=1;
-    $juan=v;
-    maxpage.set(sutra.juanpage[v-1]);
-    onPageChange($pb);
-    return v;
-}
-const onPageChange=v=>{
-    // const line=lineOfJuanPb($juan,v);
-    // if (line<=$thecm.lineCount()) $thecm.setCursor({line});
-    // pb.set(v)
+    const line=1+(getJuanLine(v)||0);
+    $thecm.setCursor({line,ch:0});
     return v;
 }
 const tryit=()=>{
     loadCMText(testdata);
 }
-
-
 function handleKeydown(evt) {
     const key=evt.key.toLowerCase();
     const alt=evt.altKey;
@@ -36,7 +26,14 @@ function handleKeydown(evt) {
         save();
     }
 }
-
+const setjuan=(folioid)=>{
+    const m=folioid.match(/(\d+)$/);
+    if (m) {
+        return parseInt(m[1]);
+    }
+    return 1;
+}
+$: juan=setjuan($activefolioid)
 </script>
 
 <svelte:window on:keydown={handleKeydown}/>
@@ -44,8 +41,8 @@ function handleKeydown(evt) {
 <button disabled={$dirty&&$filename} title="alt-o" class="clickable" on:click={openOff}>📂</button>
 {#if $filename}
 <button disabled={!$dirty||!$filename} title="alt-s" on:click={save}>💾</button>
-卷<InputNumber max={$maxjuan} value={$juan} onChange={onJuanChange}/>
-頁<InputNumber max={$maxpage} value={$pb} onChange={onPageChange}/>
+卷<InputNumber bind:max={$maxjuan} bind:value={juan} onChange={onJuanChange} min={1}/>
+{#if $dirty>50}<span style="color:red">更動多處請存檔</span>{/if}
 {:else}
 <button on:click={tryit}>試試看</button>
 {/if}
