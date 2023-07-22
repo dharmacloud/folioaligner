@@ -61,7 +61,7 @@ const getCursorPage=(cm,addmarker=false)=>{
         }
     }
     let foliolines=toFolioText(lines);
-    foliolines=foliolines.join('\n').replace(/【[^】]+】/,'').split('\n');
+    foliolines=foliolines.join('\n').replace(/[（【][^】]+[）】]/,'').split('\n');
     return [pb,foliolines,pbindex];
 }
 export const getMarkPos=(pagetext)=>{
@@ -158,16 +158,17 @@ const nextLb=(cm,line,ch)=>{
     let nextline2=line+2<cm.lineCount()?"\n"+cm.getLine(line+2):'';
     let nextline3=line+3<cm.lineCount()?"\n"+cm.getLine(line+3):'';
 
-    let linetext=cm.getLine(line).slice(ch)
+    let linetext=cm.getLine(line)
 
-    if (!linetext.endsWith('：')) {
-        linetext+=nextline+nextline2+nextline3;
+    //if next line is gatha but not this line, stop at the begining of next line
+    if (!~linetext.indexOf('^gatha') && ~nextline.indexOf('^gatha')) {
+        linetext= linetext.slice(ch)+"\n"
     } else {
-        linetext+="\n"
+        linetext= linetext.slice(ch)+nextline+nextline2+nextline3;
     }
 
     //text in bracket not counted
-    linetext=linetext.replace(/【([^】]+)】/g,(m,m1)=>'【'+ '】'.repeat(m.length+1));
+    linetext=linetext.replace(/[【（]([^】]+)[）】]/g,(m,m1)=>'【'+ '】'.repeat(m.length+1));
 
 
     let remain=FolioChars;
