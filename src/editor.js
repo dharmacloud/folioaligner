@@ -159,7 +159,7 @@ const nextLb=(cm,line,ch)=>{
     let nextline3=line+3<cm.lineCount()?"\n"+cm.getLine(line+3):'';
 
     let linetext=cm.getLine(line)
-
+    let ingatha=~linetext.indexOf('^gatha');
     //if next line is gatha but not this line, stop at the begining of next line
     if (!~linetext.indexOf('^gatha') && ~nextline.indexOf('^gatha')) {
         linetext= linetext.slice(ch)+"\n"
@@ -172,7 +172,7 @@ const nextLb=(cm,line,ch)=>{
 
 
     let remain=FolioChars;
-    let now=0, ingatha=false;
+    let now=0;
     while (remain>0 && now<linetext.length) {
         let c=linetext.charAt(now);
         if (c=="\n" && now+1<linetext.length) {
