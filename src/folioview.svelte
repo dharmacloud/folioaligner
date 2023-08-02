@@ -7,7 +7,7 @@ import {FolioChars} from './editor.js'
 let defaultIndex=0;
 let swiper;
 let images=[];
-let message='';
+let message='',stableleft;
 const swipeConfig = {
     autoplay: false,
     delay: 0,

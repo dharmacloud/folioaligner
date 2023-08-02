@@ -31,3 +31,4 @@ export let canedit=false;
 editfreely.subscribe((e)=>canedit=e=='on')
 
 savedpos.subscribe((savedpos)=>updateSettings({savedpos}));
+

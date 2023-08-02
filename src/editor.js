@@ -3,7 +3,6 @@ import {get} from 'svelte/store';
 import {dirty,canedit,thecm,cursormark,cursorchar,cursorline, folioLines,maxline,
     maxjuan,activepb, activefolioid, editfreely} from './store.js';
 const pbs=[];
-const regPB=/\^pb(\d+)/;
 const Cursormarker='▼';
 export const FolioChars=17;
 const foliomarks=[];
