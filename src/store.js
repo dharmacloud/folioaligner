@@ -24,7 +24,7 @@ export const swiper=writable(null)
 
 const host=document.location.host;
 const localhost=~host.indexOf('127.0.0.1')||~host.indexOf('localhost');
-export const foliopath=writable(  localhost?'folio/':'https://dharmacloud.github.io/swipegallery/folio/' );
+export const foliopath=writable(  localhost?'folio/':'https://shutonggui.cn/ylz/folio/' );
 
 panepos.subscribe((panepos)=>updateSettings({panepos}))
 export let canedit=false;

@@ -1,4 +1,4 @@
-import {OFFTAG_REGEX_G,concreateLength,toFolioText,CJKRangeName} from 'ptk';
+import {OFFTAG_REGEX_G,toFolioText,CJKRangeName, splitUTF32Char} from 'ptk';
 import {get} from 'svelte/store';
 import {dirty,canedit,thecm,cursormark,cursorchar,cursorline, folioLines,maxline,
     maxjuan,activepb, activefolioid, editfreely} from './store.js';
@@ -69,8 +69,11 @@ export const getMarkPos=(pagetext)=>{
     for (let i=0;i<pagetext.length;i++) {
         const linetext=pagetext[i];
         let at=linetext.indexOf(Cursormarker);
-        if (~at) {
-            ch=concreateLength(linetext.slice(0,at));
+        if (~at) 
+            {
+            ch=splitUTF32Char(linetext.slice(0,at)).length;
+            //ch=concreateLength();
+            
             while (at>1 && !CJKRangeName(linetext.slice(at-1,at))) { //往前直到 是字
                 at--;
             }

@@ -1,1 +1,1 @@
-copy/y dist\*.* \github.io\accelon.github.io\folioaligner
+copy/y dist\*.* \github.io\accelon.github.io\foliocrop
