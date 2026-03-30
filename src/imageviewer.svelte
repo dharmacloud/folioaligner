@@ -2,6 +2,7 @@
 import Help from './help.svelte';
 import {imageurl} from './store.js'
 </script>
+
 {#if $imageurl}
 <img id='image1' src={$imageurl} class="image" alt="noimage"/>
 {:else}
@@ -10,4 +11,5 @@ import {imageurl} from './store.js'
 
 <style>
 .image {height:95vh}
+
 </style>

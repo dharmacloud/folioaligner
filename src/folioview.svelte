@@ -4,6 +4,7 @@ import {activefolioid,foliopath,cursormark,cursorchar,folioLines,activepb,maxpag
 import Swipe from './3rdparty/swipe.svelte';
 import SwipeItem from './3rdparty/swipeitem.svelte';
 import {FolioChars} from './editor.js'
+    import { alphabetically0 } from 'ptk';
 let defaultIndex=0;
 let swiper;
 let images=[];
@@ -58,8 +59,12 @@ const loadZip=async folio=>{
     }
 
     const imgs=[];
-    for (let i=0;i<zip.files.length;i++) {
-        const blob=new Blob([zip.files[i].content]);
+    //to sort zip file by name
+    const sortedfilenames=zip.files.map(f=>[f.name,f]);
+    sortedfilenames.sort(alphabetically0);
+
+    for (let i=0;i<sortedfilenames.length;i++) {
+        const blob=new Blob([sortedfilenames[i][1].content]);
         imgs.push(URL.createObjectURL(blob));
     }    
     defaultIndex=zip.files.length-1;
@@ -108,6 +113,7 @@ $: gotoPb($activepb)
 </script>
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <div class="swipe-holder" on:wheel={mousewheel} >
+<span class="imagelabel">{images.length-defaultIndex}</span>
 {#if ready}
 <Swipe bind:this={swiper} {...swipeConfig} {defaultIndex} on:click={onclick} on:change={swipeChanged}>
     {#each images as image,idx}
@@ -126,6 +132,6 @@ $: gotoPb($activepb)
     height: 100vh;
     /* width: 50%;  */
 }
-
+.imagelabel {position: absolute;z-index: 1000}
 .swipe {height:100vh;top:50%;left:50%;transform: translate(-0%,-0%); }
 </style>
