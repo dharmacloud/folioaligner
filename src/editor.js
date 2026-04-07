@@ -232,6 +232,9 @@ export const keyDown=(cm,e)=>{
             if (lfs+1>=get(folioLines)) {
                 toinsert='^pb'+(pb+2);
             }
+            if (cursor.line==0) {
+                toinsert='^pb1';
+            }
             touchtext(()=>{
                 newtext=(linetext.slice(0,cursor.ch)+toinsert+linetext.slice(cursor.ch));
                 replaceLine(cm,cursor.line,newtext);
