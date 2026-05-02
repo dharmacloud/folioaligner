@@ -67,13 +67,12 @@ export const getMarkPos=(pagetext)=>{
     if (!pagetext || !pagetext.length) return 0;
     let ch=0,line=0,thechar='';
     for (let i=0;i<pagetext.length;i++) {
-        const linetext=pagetext[i];
+        const linetext=pagetext[i]
+        .replace(OFFTAG_REGEX_G,'') //去掉tag，免得影響字數計算    
+        .replace(/[「」『』，。！？；：、\t]/g,''); 
         let at=linetext.indexOf(Cursormarker);
-        if (~at) 
-            {
-            ch=splitUTF32Char(linetext.slice(0,at)).length;
-            //ch=concreateLength();
-            
+        if (~at) {
+            ch=splitUTF32Char(linetext.slice(0,at)).length;           
             while (at>1 && !CJKRangeName(linetext.slice(at-1,at))) { //往前直到 是字
                 at--;
             }

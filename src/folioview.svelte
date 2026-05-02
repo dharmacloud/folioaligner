@@ -93,8 +93,8 @@ const folioCursorCharStyle=mark=>{
     const frame=imageFrame()
     const unitw=(frame.width/$folioLines)||0;
     const unith=(frame.height/FolioChars)||0;
-    const left=Math.floor(($folioLines-line-1)*unitw);
-    const top=Math.floor(unith*ch)-unith;
+    const left=Math.floor(($folioLines-line-1)*unitw)-unitw/4;
+    const top=Math.floor(unith*ch)-unith-unith/4;
     const style=`left:${left}px;top:${top}px`;
     return style;
 }
