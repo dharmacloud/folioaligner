@@ -5,7 +5,6 @@ export const loadSettings=()=>{
     let savedpos={};
     try {
         savedpos=JSON.parse(_savedpos);
-        console.log(savedpos)
     } catch(e){
         console.log(e);
         savedpos={};

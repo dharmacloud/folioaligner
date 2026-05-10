@@ -13,13 +13,12 @@ setTimeout(()=>{
         'onReady': onPlayerReady
     }
     });
-    console.log('create youtube player')
     player.set(pylr)
 },3000);
 
 function onPlayerReady(e) {
     // 為確保瀏覽器上可以自動播放，要把影片調成靜音
-    console.log('player ready')
+
     e.target.mute().playVideo();
     setTimeout(async ()=>{
         e.target.pauseVideo();
