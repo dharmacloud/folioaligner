@@ -2,6 +2,7 @@ import {OFFTAG_REGEX_G,toFolioText,CJKRangeName, splitUTF32Char} from 'ptk';
 import {get} from 'svelte/store';
 import {dirty,canedit,thecm,cursormark,cursorchar,cursorline, folioLines,maxline,
     maxjuan,activepb, activefolioid, editfreely} from './store.js';
+
 const pbs=[];
 const Cursormarker='▼';
 export const FolioChars=17;
@@ -69,7 +70,7 @@ export const getMarkPos=(pagetext)=>{
     for (let i=0;i<pagetext.length;i++) {
         const linetext=pagetext[i]
         .replace(OFFTAG_REGEX_G,'') //去掉tag，免得影響字數計算    
-        .replace(/[「」『』，。！？；：、\t]/g,''); 
+        .replace(/[「」『』《》，。！？；：、\t]/g,''); 
         let at=linetext.indexOf(Cursormarker);
         if (~at) {
             ch=splitUTF32Char(linetext.slice(0,at)).length;           

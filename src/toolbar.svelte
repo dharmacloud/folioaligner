@@ -1,19 +1,17 @@
 <script>
 import {activefolioid,cursorline,dirty,thecm,folioLines,maxjuan,maxline,filename,editfreely} from './store.js';
 import InputNumber from './inputnumber.svelte';
-import {setCursorLine,loadCMText,getJuanLine} from './editor.js'
+import {setCursorLine,getJuanLine} from './editor.js'
 import {openOff,save} from './workingfile.js'
 import Switch from './3rdparty/switch.svelte'
-import {testdata} from './testdata.js'
+
 let juan;
 const onJuanChange=v=>{
     const line=1+(getJuanLine(v)||0);
     $thecm.setCursor({line,ch:0});
     return v;
 }
-const tryit=()=>{
-    loadCMText(testdata);
-}
+
 function handleKeydown(evt) {
     const key=evt.key.toLowerCase();
     const alt=evt.altKey;
@@ -43,8 +41,7 @@ $: juan=setjuan($activefolioid)
 <button disabled={!$dirty||!$filename} title="alt-s" on:click={save}>💾</button>
 卷<InputNumber bind:max={$maxjuan} bind:value={juan} onChange={onJuanChange} min={1}/>
 {#if $dirty>50}<span style="color:red">更動多處請存檔</span>{/if}
-{:else}
-<button on:click={tryit}>試試看</button>
+
 {/if}
 
 <InputNumber bind:value={$cursorline} onChange={setCursorLine} min={1} max={$maxline}/>

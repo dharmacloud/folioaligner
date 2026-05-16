@@ -3,8 +3,9 @@ import {ZipStore} from 'ptk/zip';
 import {activefolioid,foliopath,cursormark,cursorchar,folioLines,activepb,maxpage} from './store.js'
 import Swipe from './3rdparty/swipe.svelte';
 import SwipeItem from './3rdparty/swipeitem.svelte';
-import {FolioChars} from './editor.js'
+import {loadCMText,FolioChars} from './editor.js'
     import { alphabetically0 } from 'ptk';
+import {testdata} from './testdata.js'
 let defaultIndex=0;
 let swiper;
 let images=[];
@@ -106,14 +107,20 @@ const gotoPb=(pb)=>{
         swiper.goTo(go);
     }
 }
-
+const tryit=()=>{
+    loadCMText(testdata);
+}
 $: loadZip($activefolioid);
 $: gotoPb($activepb)
     //{previewimages[previewimages.length-idx-1]
 </script>
 <!-- svelte-ignore a11y-click-events-have-key-events -->
 <div class="swipe-holder" on:wheel={mousewheel} >
+{#if images.length}
 <span class="imagelabel">{images.length-defaultIndex}</span>
+{:else}
+<button on:click={tryit}>試作</button>
+{/if}
 {#if ready}
 <Swipe bind:this={swiper} {...swipeConfig} {defaultIndex} on:click={onclick} on:change={swipeChanged}>
     {#each images as image,idx}
